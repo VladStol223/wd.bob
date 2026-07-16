@@ -1,0 +1,2056 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Winn Dixie x IBM Bob -- Choose Your AI Adventure</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --uah-navy:  #002147;
+    --uah-blue:  #0057B8;
+    --uah-gold:  #F0AB00;
+    --ibm-blue:  #0F62FE;
+    --bg:        #111318;
+    --surface:   #1c1f26;
+    --border:    #2e3140;
+    --text:      #e2e6f0;
+    --muted:     #8b92a8;
+    --radius:    16px;
+
+    --ca: #7c3aed;
+    --cb: #0057B8;
+    --cc: #1a7a4a;
+    --cd: #c2790a;
+
+    /* ── Motion tokens ── */
+    --ease-premium:  cubic-bezier(0.05, 0.7, 0.1, 1);
+    --ease-corporate: cubic-bezier(0.2, 0, 0, 1);
+    --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-gentle:   cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out:      cubic-bezier(0.0, 0, 0.2, 1);
+    --ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── AMBIENT LAYER: Starfield ──────────────── */
+  #stars-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    animation: starfield-fade 8s var(--ease-gentle) infinite alternate;
+  }
+  @keyframes starfield-fade {
+    from { opacity: 0.35; }
+    to   { opacity: 0.55; }
+  }
+
+  /* ── HERO ──────────────────────────────────── */
+  .hero {
+    position: relative;
+    background: linear-gradient(165deg, var(--uah-navy) 0%, #0a2a5e 50%, #0d2f65 80%, #0e1520 100%);
+    color: white;
+    text-align: center;
+    padding: 96px 24px 180px;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  /* Fade edge: hero bleeds into dark background */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 320px;
+    background: linear-gradient(to bottom, transparent 0%, transparent 40%, var(--bg) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Ambient: glassmorphism radial glow */
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 340px; height: 340px;
+    background: radial-gradient(circle, rgba(15,98,254,0.18) 0%, transparent 70%);
+    top: -60px; right: 10%;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: orb-breathe 14s var(--ease-gentle) infinite alternate;
+  }
+
+  /* Ambient: orb rings — scale + opacity breathe + spin */
+  .hero-orbit {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(240,171,0,0.14);
+    pointer-events: none;
+    animation:
+      orb-breathe var(--orb-dur, 28s) var(--ease-gentle) infinite alternate,
+      orb-spin    var(--orb-rot, 30s) linear             infinite;
+  }
+  .hero-orbit:nth-child(1) {
+    width: 480px; height: 480px; top: -170px; left: -140px;
+    --orb-dur: 28s; --orb-rot: 30s;
+  }
+  .hero-orbit:nth-child(2) {
+    width: 320px; height: 320px; bottom: -100px; right: -80px;
+    --orb-dur: 22s; --orb-rot: 22s;
+    animation-direction: alternate, reverse;
+  }
+  .hero-orbit:nth-child(3) {
+    width: 210px; height: 210px; top: 28px; right: 18%;
+    --orb-dur: 18s; --orb-rot: 16s;
+  }
+  @keyframes orb-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes orb-breathe {
+    from { opacity: 0.5; transform: scale(0.97); }
+    to   { opacity: 1.0; transform: scale(1.03); }
+  }
+
+  /* Primary: hero content — staggered entrance */
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(240,171,0,0.12);
+    border: 1px solid rgba(240,171,0,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--uah-gold);
+    border-radius: 100px;
+    padding: 7px 22px;
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: hero-enter 550ms var(--ease-premium) 0ms forwards;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.13;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: hero-enter 560ms var(--ease-premium) 80ms forwards;
+  }
+  .hero h1 span { color: var(--uah-gold); }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.18rem);
+    max-width: 600px; margin: 0 auto 44px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: hero-enter-muted 560ms var(--ease-premium) 160ms forwards;
+  }
+  .hero-cta {
+    background: var(--uah-gold); color: var(--uah-navy);
+    font-weight: 800; font-size: 1rem;
+    padding: 15px 44px; border-radius: 100px;
+    border: none; cursor: pointer;
+    min-height: 50px; min-width: 44px;
+    display: inline-flex; align-items: center; gap: 8px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation:
+      hero-enter 560ms var(--ease-premium) 240ms forwards,
+      hero-pulse 2.5s  var(--ease-gentle)  2s    infinite;
+    transition:
+      transform  180ms var(--ease-out),
+      box-shadow 180ms var(--ease-out);
+    position: relative; z-index: 2;
+  }
+  .hero-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 32px rgba(240,171,0,0.45);
+  }
+  .hero-cta:active {
+    transform: scale(0.96);
+    transition: transform 120ms var(--ease-corporate);
+  }
+
+  @keyframes hero-enter {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes hero-enter-muted {
+    from { opacity: 0;    transform: translateY(-20px); }
+    to   { opacity: 0.85; transform: translateY(0); }
+  }
+  @keyframes hero-pulse {
+    0%, 100% { box-shadow: 0 0 0 0    rgba(240,171,0,0.45); }
+    50%       { box-shadow: 0 0 0 14px rgba(240,171,0,0);   }
+  }
+
+  /* ── SCROLL SECTION ──────────────────────── */
+  .scroll-section {
+    position: relative; z-index: 1;
+    max-width: 960px; margin: 0 auto;
+    padding: 0px 20px 108px;
+  }
+
+  .section-intro {
+    text-align: center; margin-bottom: 64px;
+    opacity: 0; transform: translateY(24px);
+    animation: section-reveal 600ms var(--ease-premium) 400ms forwards;
+  }
+  @keyframes section-reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section-intro h2 { font-size: 1.85rem; font-weight: 800; color: var(--uah-gold); }
+  .section-intro p  { color: var(--muted); margin-top: 8px; font-size: 1rem; }
+  .divider {
+    width: 56px; height: 4px;
+    background: linear-gradient(90deg, var(--uah-gold), var(--ibm-blue));
+    border-radius: 4px; margin: 16px auto 0;
+  }
+
+  /* ── BUBBLE TRACK CARDS ──────────────────── */
+  .tracks-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Primary: card entrance spring settle */
+  .bubble-card {
+    background: var(--surface);
+    border-radius: 24px;
+    border: 1.5px solid var(--border);
+    border-left: 5px solid var(--border);
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity    400ms var(--ease-spring),
+      transform  400ms var(--ease-spring),
+      box-shadow 200ms var(--ease-out);
+  }
+  .bubble-card.bubble-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Secondary: hover lifts + shadow elevation */
+  .bubble-card:not(.open):hover {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    transform: translateY(-4px);
+    transition:
+      box-shadow 200ms var(--ease-out),
+      transform  200ms var(--ease-out);
+  }
+  .bubble-card.open {
+    cursor: default;
+    transform: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  }
+
+  .bubble-card.track-a { border-left-color: var(--ca); }
+  .bubble-card.track-b { border-left-color: var(--cb); }
+  .bubble-card.track-c { border-left-color: var(--cc); }
+  .bubble-card.track-d { border-left-color: var(--cd); }
+
+  /* CARD SUMMARY */
+  .card-summary {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 28px 28px 24px;
+    min-height: 44px;
+  }
+
+  /* Secondary: icon pops when card opens */
+  .card-icon {
+    width: 60px; height: 60px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: transform 350ms var(--ease-spring);
+  }
+  .bubble-card.open .card-icon { transform: scale(1.08); }
+  .track-a .card-icon { background: rgba(124,58,237,0.18); }
+  .track-b .card-icon { background: rgba(0,87,184,0.18);   }
+  .track-c .card-icon { background: rgba(26,122,74,0.16);  }
+  .track-d .card-icon { background: rgba(194,121,10,0.18); }
+  .card-icon svg { width: 28px; height: 28px; display: block; }
+
+  .card-text { flex: 1; min-width: 0; }
+  .card-label {
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .track-a .card-label { color: var(--ca); }
+  .track-b .card-label { color: var(--cb); }
+  .track-c .card-label { color: var(--cc); }
+  .track-d .card-label { color: var(--cd); }
+
+  .card-title { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+  .card-desc  { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+  .card-meta { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .card-tag {
+    display: inline-flex; align-items: center;
+    font-size: 0.72rem; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+  .track-a .card-tag { border-color: rgba(124,58,237,0.40); color: #b49dfa; background: rgba(124,58,237,0.10); }
+  .track-b .card-tag { border-color: rgba(0,87,184,0.40);  color: #7db3f5; background: rgba(0,87,184,0.10);  }
+  .track-c .card-tag { border-color: rgba(26,122,74,0.40);  color: #5ec98a; background: rgba(26,122,74,0.10);  }
+  .track-d .card-tag { border-color: rgba(194,121,10,0.40); color: #f5b84a; background: rgba(194,121,10,0.10); }
+
+  /* Secondary: chevron rotates on open */
+  .card-chevron {
+    width: 40px; height: 40px; flex-shrink: 0;
+    border-radius: 50%; border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    transition:
+      transform    300ms var(--ease-gentle),
+      border-color 250ms var(--ease-out),
+      background   250ms var(--ease-out),
+      color        250ms var(--ease-out);
+  }
+  .card-chevron svg { width: 16px; height: 16px; display: block; }
+  .bubble-card.open .card-chevron {
+    transform: rotate(180deg);
+    border-color: var(--uah-gold);
+    background: rgba(240,171,0,0.15);
+    color: var(--uah-gold);
+  }
+
+  /* Primary: card expand/collapse — Corporate easing 450ms */
+  .card-detail {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 450ms var(--ease-gentle);
+  }
+  .bubble-card.open .card-detail { max-height: 3000px; }
+
+  .card-detail-inner {
+    border-top: 1px solid var(--border);
+    padding: 28px 28px 28px 24px;
+  }
+  .detail-intro {
+    font-size: 0.92rem; color: var(--muted); line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  /* USE CASE ACCORDION */
+  .use-cases { display: flex; flex-direction: column; gap: 14px; }
+  .use-case {
+    background: #14171f;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 250ms var(--ease-out), opacity 300ms var(--ease-out), transform 300ms var(--ease-spring);
+  }
+  .use-case.uc-open {
+    border-color: var(--uah-gold);
+  }
+  /* Locked accordion steps — hidden until unlocked */
+  .use-case.uc-locked {
+    opacity: 0.28;
+    pointer-events: none;
+  }
+  .use-case.uc-locked .use-case-header::after {
+    content: '🔒';
+    font-size: 0.8rem;
+    margin-left: auto;
+    padding-right: 4px;
+    opacity: 0.6;
+  }
+  .use-case.uc-unlocked {
+    animation: uc-unlock-pop 350ms var(--ease-spring) both;
+  }
+  @keyframes uc-unlock-pop {
+    from { opacity: 0.28; transform: translateY(6px); }
+    to   { opacity: 1;    transform: translateY(0);   }
+  }
+  .use-case-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 48px;
+    transition: background 200ms var(--ease-out);
+  }
+  .use-case-header:hover { background: #1e2130; }
+
+  .uc-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 800;
+    color: white; flex-shrink: 0;
+  }
+  .track-a .uc-num { background: var(--ca); }
+  .track-b .uc-num { background: var(--cb); }
+  .track-c .uc-num { background: var(--cc); }
+  .track-d .uc-num { background: var(--cd); }
+
+  .uc-title { font-size: 0.92rem; font-weight: 700; color: var(--text); flex: 1; line-height: 1.4; }
+  .uc-arrow {
+    color: var(--muted); flex-shrink: 0;
+    transition: transform 250ms var(--ease-gentle);
+  }
+  .uc-arrow svg { width: 14px; height: 14px; display: block; }
+  .use-case.uc-open .uc-arrow { transform: rotate(180deg); }
+
+  /* 300ms ease-out accordion */
+  .uc-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 300ms var(--ease-out);
+  }
+  .use-case.uc-open .uc-body { max-height: 900px; }
+
+  .uc-body-inner { padding: 0 16px 16px; }
+  .uc-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
+
+  /* PROMPT BOX */
+  .prompt-box {
+    background: #0d1b35;
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+  }
+  .prompt-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--uah-gold); margin-bottom: 8px;
+  }
+  .prompt-box pre {
+    color: #b8c8e8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap; word-break: break-word; line-height: 1.65;
+    padding-right: 60px;
+  }
+
+  /* Copy button: press 0.96 → bounce 1.02 → settle 1.0 */
+  .copy-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.20);
+    color: white; font-size: 0.7rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 8px;
+    cursor: pointer; min-height: 32px; min-width: 44px;
+    transition:
+      background 150ms var(--ease-out),
+      transform  150ms var(--ease-out);
+    transform-origin: center;
+  }
+  .copy-btn:hover  { background: rgba(255,255,255,0.20); }
+  .copy-btn:active { transform: scale(0.96); }
+  .copy-btn.copied {
+    background: #1a7a4a; border-color: #1a7a4a;
+    animation: copy-bounce 300ms var(--ease-spring) forwards;
+  }
+  @keyframes copy-bounce {
+    0%   { transform: scale(0.96); }
+    60%  { transform: scale(1.02); }
+    100% { transform: scale(1.0);  }
+  }
+
+  /* QUIZ (Track D) */
+  .quiz-section { margin-top: 10px; }
+  .quiz-q {
+    margin-bottom: 18px;
+    opacity: 0; transform: translateY(14px);
+    transition:
+      opacity   300ms var(--ease-out),
+      transform 300ms var(--ease-out);
+  }
+  .quiz-q.qvisible { opacity: 1; transform: none; }
+  .quiz-q h5 { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: 10px; cursor: pointer; font-size: 0.84rem;
+    min-height: 44px; user-select: none;
+    transition:
+      border-color 180ms var(--ease-out),
+      background   180ms var(--ease-out),
+      transform    120ms var(--ease-out);
+  }
+  .quiz-opt:hover  { border-color: var(--cd); background: rgba(194,121,10,0.04); }
+  .quiz-opt:active { transform: scale(0.98); }
+  .quiz-opt.selected { border-color: var(--cd); background: rgba(194,121,10,0.08); font-weight: 600; }
+
+  .qdot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    transition:
+      border-color 180ms var(--ease-out),
+      background   180ms var(--ease-out),
+      transform    200ms var(--ease-spring);
+  }
+  .quiz-opt.selected .qdot {
+    border-color: var(--cd); background: var(--cd);
+    transform: scale(1.15);
+  }
+
+  .quiz-reveal-btn {
+    margin-top: 18px;
+    display: none;
+    width: 100%;
+    background: var(--uah-gold); color: var(--uah-navy);
+    border: none; font-weight: 800; font-size: 0.95rem;
+    padding: 14px 28px; border-radius: 100px;
+    cursor: pointer; min-height: 50px;
+    align-items: center; justify-content: center; gap: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      transform  200ms var(--ease-out),
+      box-shadow 200ms var(--ease-out),
+      opacity    300ms var(--ease-out);
+  }
+  .quiz-reveal-btn.btn-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .quiz-reveal-btn:hover  { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(240,171,0,0.45); }
+  .quiz-reveal-btn:active { transform: scale(0.96); transition-duration: 100ms; }
+
+  .quiz-result-box {
+    margin-top: 14px; padding: 16px 18px;
+    border-radius: 12px;
+    background: rgba(194,121,10,0.07);
+    border: 1px solid rgba(194,121,10,0.30);
+    font-size: 0.85rem; color: var(--text); line-height: 1.65;
+    display: none;
+    animation: result-reveal 350ms var(--ease-spring) both;
+  }
+  @keyframes result-reveal {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  }
+
+  /* MODE INSTALL STEPS */
+  .mode-steps {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mode-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: #13161e;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 800; flex-shrink: 0;
+    color: white; margin-top: 1px;
+  }
+  .track-a .step-num { background: var(--ca); }
+  .step-body { flex: 1; min-width: 0; }
+  .step-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--text);
+    margin-bottom: 4px; line-height: 1.4;
+  }
+  .step-desc {
+    font-size: 0.78rem; color: var(--muted); line-height: 1.55;
+    margin-bottom: 10px;
+  }
+  .step-desc:last-child { margin-bottom: 0; }
+
+  /* download button */
+  .step-download-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--ca); color: white;
+    font-size: 0.8rem; font-weight: 700;
+    padding: 9px 18px; border-radius: 8px;
+    border: none; cursor: pointer; min-height: 36px;
+    text-decoration: none;
+    transition: opacity 150ms var(--ease-out), transform 120ms var(--ease-out);
+  }
+  .step-download-btn:hover  { opacity: 0.88; }
+  .step-download-btn:active { transform: scale(0.96); }
+  .step-download-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .step-download-btn.downloaded {
+    background: #1a7a4a; border-color: #1a7a4a;
+  }
+
+  /* pulsing glow for any "next step" button */
+  @keyframes next-step-pulse {
+    0%, 100% { box-shadow: 0 0 0 0px rgba(124,58,237,0.65); }
+    50%       { box-shadow: 0 0 0 14px rgba(124,58,237,0);  }
+  }
+  .step-download-btn.pulse-cta,
+  .step-confirm-btn.pulse-cta {
+    animation: next-step-pulse 2.4s var(--ease-gentle) infinite;
+  }
+  /* copy button pulse uses its own colour */
+  @keyframes copy-pulse {
+    0%, 100% { box-shadow: 0 0 0 0px rgba(124,58,237,0.6); }
+    50%       { box-shadow: 0 0 0 12px rgba(124,58,237,0); }
+  }
+  .copy-btn.pulse-cta {
+    animation: copy-pulse 2.4s var(--ease-gentle) infinite;
+  }
+
+  /* confirm / "it's there" button */
+  .step-confirm-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: transparent; color: var(--ca);
+    font-size: 0.8rem; font-weight: 700;
+    padding: 8px 18px; border-radius: 8px;
+    border: 1.5px solid var(--ca); cursor: pointer; min-height: 36px;
+    margin-top: 12px;
+    transition: background 150ms var(--ease-out), color 150ms var(--ease-out), transform 120ms var(--ease-out);
+  }
+  .step-confirm-btn:hover  { background: var(--ca); color: white; }
+  .step-confirm-btn:active { transform: scale(0.96); }
+  .step-confirm-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* screenshot inside a step */
+  .step-screenshot {
+    margin-top: 10px;
+    border: 1px solid #2e3a55;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 520px;
+  }
+  .step-screenshot img { display: block; width: 100%; height: auto; }
+  .step-screenshot-caption {
+    font-size: 0.72rem; color: var(--muted);
+    background: #1c2236; padding: 5px 10px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Progressive step reveal */
+  .mode-step.step-hidden {
+    display: none;
+  }
+  .mode-step.step-reveal {
+    animation: step-pop-in 350ms var(--ease-spring) both;
+  }
+  @keyframes step-pop-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-no-folder {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.74rem; color: var(--muted);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 0; text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: color 150ms var(--ease-out);
+    margin-left: 10px;
+  }
+  .step-no-folder:hover { color: var(--uah-gold); text-decoration-color: var(--uah-gold); }
+
+  /* copy prompt box inside a step */
+  .step-prompt {
+    background: #0d1b35;
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+    margin-top: 4px;
+  }
+  .step-prompt pre {
+    color: #b8c8e8;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap; word-break: break-word; line-height: 1.6;
+    padding-right: 60px;
+  }
+  .step-prompt .copy-btn { top: 8px; right: 8px; }
+
+  /* MODE INSTALL BOX (kept for legacy, hidden) */
+  .mode-install {
+    margin-top: 14px;
+    background: #0a1628;
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 12px;
+    padding: 14px 18px;
+    position: relative;
+  }
+  .mode-install-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #a78bfa; margin-bottom: 8px;
+  }
+  .mode-install pre {
+    color: #c4b5fd;
+    font-family: 'Courier New', monospace;
+    font-size: 0.76rem;
+    white-space: pre-wrap; word-break: break-word; line-height: 1.6;
+    max-height: 220px; overflow-y: auto;
+    padding-right: 60px;
+  }
+  .mode-install .copy-btn { border-color: rgba(167,139,250,0.3); }
+
+  /* MODE SWITCH INSTRUCTIONS */
+  .mode-switch-box {
+    margin-top: 16px;
+    background: #161a24;
+    border: 1px solid #2e3a55;
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .mode-switch-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ca); margin-bottom: 8px;
+  }
+  .mode-switch-box ol {
+    margin: 0; padding-left: 18px;
+    font-size: 0.84rem; color: var(--text); line-height: 1.75;
+  }
+  .mode-switch-box ol li { margin-bottom: 4px; }
+  .mode-switch-screenshot {
+    margin-top: 12px;
+    border: 1px solid #2e3a55;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 520px;
+  }
+  .mode-switch-screenshot img {
+    display: block; width: 100%; height: auto;
+  }
+  .mode-switch-caption {
+    font-size: 0.75rem; color: var(--muted);
+    background: #1c2236; padding: 6px 10px;
+    text-align: center;
+  }
+
+  /* STARTING PROMPT */
+  .card-starting-prompt {
+    margin-top: 22px;
+    background: #0d1b35;
+    border-radius: 14px;
+    padding: 18px 22px;
+  }
+  .csp-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--uah-gold); margin-bottom: 8px;
+  }
+  .csp-text {
+    color: #b8c8e8; font-style: italic;
+    font-size: 0.85rem; line-height: 1.65;
+  }
+
+  /* BACK LINK */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem; padding: 8px 18px;
+    border-radius: 100px; cursor: pointer;
+    min-height: 44px; margin-bottom: 24px;
+    transition:
+      border-color 180ms var(--ease-out),
+      color        180ms var(--ease-out);
+  }
+  .back-btn:hover { border-color: var(--uah-blue); color: var(--uah-blue); }
+
+  /* ── NEW TO BOB BUTTON + MODAL ─────────────── */
+  .new-to-bob-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent;
+    border: 1.5px solid rgba(240,171,0,0.45);
+    color: var(--uah-gold);
+    font-size: 0.88rem; font-weight: 600;
+    padding: 12px 28px; border-radius: 100px;
+    cursor: pointer; min-height: 44px;
+    margin-top: 16px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: hero-enter 560ms var(--ease-premium) 320ms forwards;
+    transition:
+      background   180ms var(--ease-out),
+      border-color 180ms var(--ease-out);
+    position: relative; z-index: 2;
+  }
+  .new-to-bob-btn:hover {
+    background: rgba(240,171,0,0.10);
+    border-color: var(--uah-gold);
+  }
+
+  /* Overlay backdrop */
+  .ntb-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .ntb-overlay.active { display: flex; }
+
+  /* Modal panel */
+  .ntb-modal {
+    background: #1c1f26;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    max-width: 520px; width: 100%;
+    padding: 32px 28px 28px;
+    position: relative;
+    animation: modal-pop 350ms var(--ease-spring) both;
+  }
+  @keyframes modal-pop {
+    from { opacity: 0; transform: scale(0.94) translateY(16px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  }
+
+  .ntb-close {
+    position: absolute; top: 14px; right: 16px;
+    background: transparent; border: none;
+    color: var(--muted); cursor: pointer;
+    padding: 6px; border-radius: 8px;
+    font-size: 1.2rem; line-height: 1;
+    transition: color 150ms var(--ease-out);
+  }
+  .ntb-close:hover { color: var(--text); }
+
+  .ntb-modal h3 {
+    font-size: 1.15rem; font-weight: 800;
+    color: var(--uah-gold); margin-bottom: 6px;
+  }
+  .ntb-modal .ntb-subtitle {
+    font-size: 0.84rem; color: var(--muted);
+    margin-bottom: 24px; line-height: 1.55;
+  }
+
+  .ntb-section { margin-bottom: 22px; }
+  .ntb-section-label {
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+
+  .ntb-row {
+    display: flex; gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .ntb-icon-wrap {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(15,98,254,0.15);
+    border: 1px solid rgba(15,98,254,0.30);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ntb-icon-wrap svg { width: 18px; height: 18px; display: block; }
+  .ntb-row-text { flex: 1; }
+  .ntb-row-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .ntb-row-desc  { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+
+  .ntb-divider {
+    width: 100%; height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  .ntb-screenshot-box {
+    background: #13161e;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 14px;
+  }
+  .ntb-screenshot-box .ntb-ss-caption {
+    font-size: 0.72rem; color: var(--muted);
+    background: #181b24; padding: 6px 12px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .ntb-screenshot-box img {
+    display: block; width: 100%; height: auto;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center; font-size: 0.78rem; color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding: 24px 20px;
+    position: relative; z-index: 1;
+  }
+
+  /* ── REDUCED MOTION ──────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .hero-badge, .hero h1, .hero p, .hero-cta,
+    .section-intro { opacity: 1; transform: none; }
+    .bubble-card { opacity: 1; transform: none; }
+  }
+
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 600px) {
+    .card-summary { flex-wrap: wrap; }
+    .card-meta    { flex-direction: column; gap: 6px; }
+    .hero         { padding: 72px 20px 84px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<!-- ═══ HERO ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-orbit"></div>
+  <div class="hero-orbit"></div>
+  <div class="hero-orbit"></div>
+  <div class="hero-badge">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <polygon points="6,0.5 7.5,4.5 12,4.5 8.5,7 9.8,11.5 6,9 2.2,11.5 3.5,7 0,4.5 4.5,4.5" fill="#F0AB00"/>
+    </svg>
+    Winn Dixie x IBM Bobathon 2026
+  </div>
+  <h1>What Could <span>AI</span> Do<br/>For You?</h1>
+  <p>Three tracks. Pick the one that fits where you are today. Click in, grab a prompt, and build something real.</p>
+  <button class="hero-cta" id="hero-cta-btn">
+    Explore the Tracks
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <br/>
+  <button class="new-to-bob-btn" id="new-to-bob-btn" aria-haspopup="dialog">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+    </svg>
+    New to Bob?
+  </button>
+</section>
+
+<!-- ═══ NEW-TO-BOB MODAL ══════════════════════════════════ -->
+<div class="ntb-overlay" id="ntb-overlay" role="dialog" aria-modal="true" aria-labelledby="ntb-title">
+  <div class="ntb-modal">
+    <button class="ntb-close" id="ntb-close" aria-label="Close">&times;</button>
+
+    <h3 id="ntb-title">First: Open a Folder</h3>
+    <p class="ntb-subtitle">Bob needs an open folder to do anything useful — write code, create files, remember context. Without one, it's just a chat window.</p>
+
+    <div class="ntb-section">
+      <div class="ntb-row">
+        <div class="ntb-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--ibm-blue)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="ntb-row-text">
+          <div class="ntb-row-title">Open Folder in the Explorer panel</div>
+          <div class="ntb-row-desc">In the <strong>Explorer</strong> panel (left sidebar), click <strong>Open Folder</strong>. Navigate to your folder and click <em>Select Folder</em>. Bob is ready to go the moment the folder loads.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ntb-divider"></div>
+
+    <div class="ntb-section">
+      <div class="ntb-section-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="display:inline-block;vertical-align:-1px;margin-right:5px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Use a dedicated, empty folder
+      </div>
+      <div class="ntb-row-desc" style="font-size:0.82rem;line-height:1.65;color:var(--muted)">
+        Create a <strong style="color:var(--text)">fresh, empty folder</strong> just for your Bob work — something like <code style="font-size:0.78rem;color:#7db3f5">~/bob-workspace</code>. Bob can read every file in the open folder, so keeping it dedicated means it only ever sees what you intentionally put there. <strong style="color:var(--text)">Don't open your home directory, Documents, or any folder with sensitive files.</strong>
+      </div>
+    </div>
+
+    <div class="ntb-screenshot-box">
+      <img src="image.png" alt="VS Code Explorer panel showing the Open Folder button"/>
+      <div class="ntb-ss-caption">VS Code Explorer — click "Open Folder" to get started</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TRACKS ══════════════════════════════════════════ -->
+<section class="scroll-section" id="tracks-section">
+  <div class="section-intro">
+    <h2>Choose Your Track</h2>
+    <p>Each bubble below is a different path into AI with Bob. Scroll down and click to open any track.</p>
+    <div class="divider"></div>
+  </div>
+
+  <div class="tracks-stream">
+
+    <!-- ── TRACK A: Build a Delivery Dashboard ──────────── -->
+    <div class="bubble-card track-a" id="card-a">
+      <div class="card-summary">
+        <div class="card-icon" aria-label="Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--ca)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div class="card-text">
+          <div class="card-label">Track A</div>
+          <div class="card-title">Supply Chain Operations Dashboard</div>
+          <div class="card-desc">Step into the role of a regional operations director and use Bob to build a live, visual supply chain dashboard — a draggable network map, per-store floor plan views, and a delivery timeline. No coding experience needed.</div>
+          <div class="card-meta">
+            <span class="card-tag">No experience needed</span>
+            <span class="card-tag">Mock data included</span>
+            <span class="card-tag">~30 min</span>
+            <span class="card-tag">Fully guided</span>
+          </div>
+        </div>
+        <div class="card-chevron" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 5 5-5"/></svg>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="card-detail-inner">
+          <div class="detail-intro">You're a regional operations director at Winn-Dixie. It's Monday morning and you've just been asked to get ahead of a potential supply chain disruption before the exec briefing at noon. In the next 30 minutes, you'll use Bob to turn a raw data file into a fully interactive operations dashboard — a network map you can drag around, store floor plans you can click into, and a live delivery tracker. Just follow the steps below.</div>
+
+          <div class="use-cases">
+
+            <div class="use-case">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="uc-title">Step 1 — Download the data file</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">This JSON file contains all the mock data Bob will use to build your dashboard — 3 warehouses, 12 stores, inventory levels, floor plan layouts, and 15 active deliveries. Save it directly into the folder you have open in Bob.</p>
+                <div class="mode-steps">
+
+                  <div class="mode-step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                      <div class="step-title">Download the data file into your workspace folder</div>
+                      <div class="step-desc">Save <code>winn-dixie-data.js</code> directly into the folder you have open in Bob. This file contains all the mock data the dashboard will read — it must be in the same folder as <code>dashboard.html</code>.</div>
+                      <button class="step-download-btn" data-download-file="winn-dixie-data.js">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download winn-dixie-data.js
+                      </button>
+                      <button class="step-no-folder" data-ntb="true">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        No folder open?
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                      <div class="step-title">Confirm the file is in your workspace</div>
+                      <div class="step-desc">You should see <code>winn-dixie-data.js</code> appear in the Explorer panel on the left side of Bob, inside your open folder. Once it's there, click continue below.</div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        It's there — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                      <div class="step-title">You're ready for Step 2</div>
+                      <div class="step-desc">The data is in place. Open the next step below to build the network map.</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case uc-locked" id="uc-step2-a">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </div>
+                <div class="uc-title">Step 2 — Build the network map</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Paste this prompt into Bob. It will create <code>dashboard.html</code> — a draggable, zoomable map showing all your warehouses and stores as nodes, connected by supply lines and color-coded by stock health. The dashboard loads its data from <code>winn-dixie-data.js</code> at runtime, so Bob never has to embed the map image.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — Step 2</div>
+                  <pre>Create a new file called `dashboard.html` in my workspace.
+
+The file must load its data from `winn-dixie-data.js` using a `<script>` tag: `<script src="winn-dixie-data.js"></script>`. That file defines a global variable `window.WINN_DIXIE_DATA` containing all warehouses, stores, deliveries, and the map background. Do NOT read, embed, or inline any content from `winn-dixie-data.js` into the HTML — just reference it with the script tag. Both files sit in the same folder so the relative path `winn-dixie-data.js` will resolve correctly when opened from the filesystem.
+
+The file should be a self-contained HTML page (all CSS and JS inline except for the data script tag) with the following:
+
+**Header:**
+- Dark navy background (#002147), white text
+- Title: "Winn-Dixie Operations Dashboard"
+- Subtitle: "Supply Chain Overview — Live View"
+- A legend row in the header showing: gold hexagon = Warehouse, colored circle = Store (green ≥70% stock, yellow 40–69%, red &lt;40%)
+
+**Network Map (main area, fills most of page height):**
+- Access data via `window.WINN_DIXIE_DATA`. The `map_background` object has `data_uri_prefix` and `base64` fields — construct the full image URI as `data_uri_prefix + base64` and set it as the CSS `background-image` of the map container.
+- The map container background color (visible before/around the image) must be `#abd3df` — the same color as the water on the map so there is no harsh edge
+- The map image is 1792×1536px. The SVG canvas must be the same aspect ratio, scaled to fill the container. All node x/y coordinates in the JSON are pixel positions within that 1792×1536 space — scale them proportionally to the rendered SVG size.
+- Each warehouse is a gold (#F0AB00) hexagon (28px radius), labeled below with its name and city. Each store is a circle (14px radius), colored by the average of its sections' stock_pct: green (#22c55e) if ≥ 70, yellow (#eab308) if 40–69, red (#ef4444) if &lt;40, labeled below with city name.
+- All node labels (warehouse name, warehouse city, store city) must be fully black (`#000000`) with no white stroke or outline — just plain black text so they are readable against the map
+- Labels must never overlap each other or their node shape. Position each label by checking its text length and shifting it left/right or up/down if it would collide with an adjacent node's label. At minimum, offset store labels 20px below the circle and warehouse labels 36px below the hexagon, and if two labels are within 80px of each other horizontally, alternate the vertical offset (one at +20px, the next at +38px) so they stack instead of collide.
+- Draw a line from each store to its warehouse (look up via warehouse_id), colored to match the store's health color, 35% opacity
+- Pan by clicking and dragging the background; zoom with the scroll wheel — plain JS, no libraries. The background image and all nodes must move and scale together.
+- A "Reset View" button in the bottom-right corner resets pan/zoom to default
+- Clicking a node highlights it with a white ring drawn as an SVG `circle` or `polygon` element — do NOT use an HTML tooltip, div overlay, or `<rect>` for the highlight. The selection indicator must be a pure SVG element (ring/outline) only, with no filled rectangle anywhere.
+
+**Footer:**
+- One line: "Data last updated: July 14, 2026 — Mock data for demonstration purposes"
+
+After creating the file, tell me to open `dashboard.html` in my browser. Remind me that `winn-dixie-data.js` must be in the same folder as `dashboard.html` for the map to load.</pre>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> in your browser. You should see a dark-themed map with warehouse and store nodes you can drag and zoom. Come back here and move on to Step 3 when you're ready.</div>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case uc-locked" id="uc-step3-a">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                </div>
+                <div class="uc-title">Step 3 — Add store &amp; warehouse drill-down</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Paste this prompt into Bob. It will update <code>dashboard.html</code> so that clicking any node opens a detail panel — a visual floor plan for stores, and a dock &amp; inventory breakdown for warehouses.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — Step 3</div>
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT re-read or embed any content from `winn-dixie-data.js` — the script tag loading it is already in the file and must stay as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via `window.WINN_DIXIE_DATA`.
+
+**Side Panel (slides in from the right on node click):**
+- Takes up 32% of the page width; the map fills the remaining 68%
+- Has a close (×) button top-right; clicking it deselects the node and restores the full-width map
+- Panel heading: node name and city, with a colored status badge (store health color, or gold for warehouse)
+
+**For a Store node, the panel shows (top to bottom):**
+1. **Overall Health** — the average stock_pct across all sections shown as a large number (e.g. "62%") with a color-coded label ("Healthy" / "At-Risk" / "Critical")
+2. **Critical Sections** — immediately below the health number, a red callout box listing any section with stock_pct &lt; 30, each with a ⚠ icon and the section name + percentage. If none, show a small green "All sections OK" line instead.
+3. **Floor Plan** — below the critical sections callout, a floor plan grid that fills the full panel width:
+   - Rendered from the store's `floor_plan` 2D array using a CSS grid
+   - Cell colors: "S" = shelf (#1e3a5f), "A" = aisle (#0d1117), "E" = entrance (#F0AB00 at 55% opacity), "C" = checkout (#7c3aed at 55% opacity), "O" = open (#0d1117)
+   - The grid must stretch to fill 100% of the panel's inner width. To get the panel width, use `Math.round(window.innerWidth * 0.32) - 48` as a reliable fallback (do NOT use `sidePanel.offsetWidth` which returns 0 when the panel is hidden). Calculate tile size as `Math.floor(panelWidth / numCols)` so all tiles are square and the grid is as large as possible.
+   - On each "S" tile that has a matching section (by row/col, 1-indexed): overlay the section name in small white text (font-size ~9px, truncated if needed) and a colored fill bar spanning the full tile width at the bottom (5px tall), colored green/yellow/red by stock_pct
+
+**For a Warehouse node, the panel shows:**
+1. **Dock Utilization** — "Docks Active: X / Y" with a gold filled progress bar
+2. **Inventory Table** — one row per category: name, units on hand / capacity, and a fill bar (green/yellow/red). Flag any category below 30% with ⚠
+
+**Delivery filtering (no visible UI yet — just the logic):**
+- Store a variable `activeFilter = null`
+- When a store node is clicked: set `activeFilter = { type: 'store', id: storeId }`
+- When a warehouse node is clicked: set `activeFilter = { type: 'warehouse', id: warehouseId }`
+- When the panel is closed: set `activeFilter = null`
+- Export a `window.getActiveFilter = () => activeFilter` function so Step 4 can read it
+
+After overwriting the file, tell me to refresh `dashboard.html` in my browser.</pre>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> in your browser. Click any store node to see its floor plan, or any warehouse node to see dock and inventory details. Move on to Step 4 when ready.</div>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case uc-locked" id="uc-step4-a">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </div>
+                <div class="uc-title">Step 4 — Add the delivery timeline</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Paste this final prompt into Bob. It adds a live delivery tracker below the map — a swimlane view of every active and completed delivery, with status badges and timeline bars.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — Step 4</div>
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT re-read or embed any content from `winn-dixie-data.js` — the script tag loading it is already in the file and must stay as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via `window.WINN_DIXIE_DATA`.
+
+**Delivery Section layout — three equal columns side by side:**
+- Section heading: "Deliveries" with three count badges inline: a red badge for delayed count, green for on-time count, grey for delivered count
+- Below the heading, render three equal-width columns with a thin divider between them:
+  - Left column header: "⚠ Delayed" (red accent)
+  - Center column header: "✓ On Time" (green accent)
+  - Right column header: "✔ Delivered" (grey accent)
+- Each delivery from the JSON goes into the column matching its status
+
+**Each delivery card (inside its column) contains:**
+1. Route label in bold: "[warehouse name] → [store name]" (look up names from the JSON)
+2. A compact horizontal timeline bar (full card width, ~10px tall):
+   - Dark background track
+   - Filled segment showing elapsed time as a proportion of total journey (depart → eta), using July 14 2026 9:00 AM as "now"
+   - Fill color: yellow for delayed, green for on_time, grey for delivered
+3. ETA time on the right of the bar — red text if delayed
+4. Items list below the bar: "Produce × 600, Meat &amp; Deli × 200" in small muted text
+5. Delayed cards only: a small pulsing red "DELAYED" badge in the top-right corner of the card
+
+**Filtering (using the `window.getActiveFilter()` function wired up in Step 3):**
+- On page load and whenever `activeFilter` changes, re-render the delivery columns
+- If `activeFilter` is null: show all deliveries
+- If `activeFilter.type === 'store'`: show only deliveries where `to_store_id` matches, in all three columns
+- If `activeFilter.type === 'warehouse'`: show only deliveries where `from_warehouse_id` matches, in all three columns
+- If a column has no matching deliveries after filtering, show a small muted "No deliveries" placeholder in that column
+- Poll `window.getActiveFilter()` every 300ms to detect filter changes. Store the interval ID in a variable (e.g. `window._deliveryPollId`) and always call `clearInterval(window._deliveryPollId)` before starting a new interval, so only one poll loop ever runs at a time.
+
+After overwriting the file, tell me to refresh `dashboard.html` in my browser to see the completed operations dashboard.</pre>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> one final time. Your full operations dashboard is complete — network map, drill-down panels, and a live delivery tracker. You're ready for the noon briefing.</div>
+                </div>
+              </div></div>
+            </div>
+
+          </div>
+
+          <div class="card-starting-prompt">
+            <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
+            <div class="csp-text">"I have a JSON data file with warehouse, store, and delivery data. Help me build a visual operations dashboard I can actually explore — a network map, store floor plans, and a delivery tracker."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TRACK B: Guided Learning Modes ───────────────── -->
+    <div class="bubble-card track-b" id="card-b">
+      <div class="card-summary">
+        <div class="card-icon" aria-label="Books">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--cb)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
+        <div class="card-text">
+          <div class="card-label">Track B</div>
+          <div class="card-title">Guided Learning Modes</div>
+          <div class="card-desc">Three structured learning paths with Bob as your tutor. Choose <strong>Qiskit</strong> for quantum, <strong>PyBob</strong> for Python, or <strong>SQL</strong> to learn database querying from scratch.</div>
+          <div class="card-meta">
+            <span class="card-tag">No experience needed</span>
+            <span class="card-tag">Interactive lessons</span>
+            <span class="card-tag">Write real code</span>
+          </div>
+        </div>
+        <div class="card-chevron" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 5 5-5"/></svg>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="card-detail-inner">
+          <div class="detail-intro">Pick the mode that fits your goals. Each one turns Bob into a step-by-step tutor that explains concepts, writes code with you, and quizzes you along the way.</div>
+          <div class="use-cases">
+
+            <div class="use-case">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div class="uc-title">QisBob - Quantum Computing with IBM</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">QisBob is a full custom Bob mode that acts as a warm, Socratic quantum mentor. It assesses your Python level, picks a learning track (Executive, Developer, or Hardware), and walks you gate by gate through Qiskit v2.0+ circuits on real IBM Quantum hardware -- quizzing you at every step.</p>
+                <div class="mode-steps">
+
+                  <div class="mode-step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                      <div class="step-title">Download the mode file into your workspace folder</div>
+                      <div class="step-desc">Save <code>QisBob.yaml</code> directly into the folder you have open in Bob. Bob needs to be able to read it.</div>
+                      <button class="step-download-btn" data-download-file="QisBob.yaml">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download QisBob.yaml
+                      </button>
+                      <button class="step-no-folder" data-ntb="true">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        No folder open?
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                      <div class="step-title">Confirm the file is in your workspace</div>
+                      <div class="step-desc">You should see <code>QisBob.yaml</code> appear in the Explorer panel on the left side of Bob, inside your open folder — just like this:</div>
+                      <div class="step-screenshot">
+                        <img src="Screenshot 2026-07-14 142350.png" alt="Bob Explorer panel showing QisBob.yaml in the workspace folder"/>
+                        <div class="step-screenshot-caption">QisBob.yaml visible in the Bob workspace Explorer</div>
+                      </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        It's there — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                      <div class="step-title">Tell Bob to install the mode</div>
+                      <div class="step-desc">Copy and paste this into Bob. It will read the file, fix the indentation, and write it to <code>.bob/custom_modes.yaml</code>.</div>
+                      <div class="step-prompt">
+                        <pre>Read QisBob.yaml from my workspace and install it as a custom Bob mode by writing it to `.bob/custom_modes.yaml`.
+
+The file needs to be wrapped under a `customModes:` key and the indentation fixed (strip 2 leading spaces from every line of the source, then re-indent each line under the list).
+
+Use the appropriate method for my platform:
+
+- **Windows (PowerShell):** Run `install-qisbob-mode.ps1` if it exists in the workspace, otherwise execute this inline:
+  ```powershell
+  $lines = Get-Content QisBob.yaml -Encoding UTF8
+  $fixed = $lines | ForEach-Object { if ($_ -match '^\s') { $_ -replace '^  ', '' } else { $_ } }
+  $out = @("customModes:") + ($fixed | ForEach-Object { "  $_" })
+  New-Item -ItemType Directory -Force -Path .bob | Out-Null
+  $out | Set-Content .bob/custom_modes.yaml -Encoding UTF8
+  ```
+
+- **macOS / Linux (bash):**
+  ```bash
+  mkdir -p .bob && printf 'customModes:\n' > .bob/custom_modes.yaml && sed 's/^  //' QisBob.yaml | sed 's/^/  /' >> .bob/custom_modes.yaml
+  ```
+
+After writing the file, confirm the mode is installed and tell me to switch to "QisBob Quantum Mentor" in the Bob mode picker.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                      <div class="step-title">Switch to QisBob mode</div>
+                      <div class="step-desc">Click the <strong>modes</strong> button at the bottom-left of the Bob chat input and select <strong>QisBob Quantum Mentor</strong>.</div>
+                      <div class="mode-switch-screenshot" style="margin-top:10px">
+                    <img src="data:image/png;base64,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IsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPGIgRERERERHlGQMxIiIiIiKiPGMgRkRERERElGcMxIiIiIiIiPKMgRgREREREVGeMRAjIiIiIiLKMwZiREREREREecZAjIiIiIiIKM8YiBEREREREeUZAzEiIiIiIqI8YyBGRERERESUZwzEiIiIiIiI8oyBGBERERERUZ4xECMiIiIiIsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPhNKycin9nw3VVQCA63390+sQERERERGtKpPRCJvNBpPJBKPRCJ1OB5VaDaUy2XYkignEYzGEw2EEAgH4/X54PB74AwH5W+XNcuInBmJERERERLQmrBYLnE4nioqKoNVp5cULEglHMD4+jtHRUXh9PnnxqlpO/MRAjIiIiIiI8spZXIyKigpYbVZ50bJ4PV4MDg5idGxMXrQqlhM/cYwYERERERHlhb2gANu3bUNzS/OKB2EAYLVZ0dzSjO3btsFeUCAvXlcYiBERERER0aqrq63F1ju2rkoAJme1WbH1jq2oq62VF60bDMSIiIiIiGjVmIxG7Nq5AxWVFfKiVVdRWYFdO3fAZDTKi9YcAzEiIiIiIloVjsJCbN+xAyazWV6UNyazGdt37ICjsFBetKYYiBERERER0YpzFhdjS9uWTPr5taRUKrClbQucxcXyojWz9t8KERERERHdVhyFhWhuaZYvXnPNLc3rpmWMgRgREREREa0Yk9GI5pYW+eJ1o7mlZV2MGWMgRkREREREK6apqXFddEecjVKpQFNTo3xx3q3fb4iIiIiIiG4pdbW1a5qYY6FMZvOap7ZnIEZERERERMtmLyhYkxT1S1VRWbGmkz4zECPKg5bmZvzJH/8R/viP/hDNTU3yYiIiIqJbXk1NjXzRureW28xAjGgVGfR6PPbRj+KRRx6B3V6IwkIHHn30UfzOR34bRoNBXp2IiIjoluQsLobVZpUvXvesNuuapbS/5QKxhx/6IB5+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" alt="Bob chat input bar showing the Agent mode dropdown button" loading="lazy" />
+                    <div class="mode-switch-caption">The <strong>modes</strong> button sits at the bottom-left of the Bob chat input — click it to switch modes.</div>
+                    </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        Mode switched — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                      <div class="step-title">Send the start prompt</div>
+                      <div class="step-desc">Copy and send this to kick off your quantum learning session:</div>
+                      <div class="step-prompt">
+                        <pre>Start my quantum loop. I want to learn quantum computing and Qiskit. Assess my current level and help me pick a project before we begin.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <div class="uc-title">PyBob - Python for Real Problems</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">PyBob is a custom Bob mode that turns Bob into a Python coach. It assesses your experience level, detects how you learn best (videos, games, or hands-on), and teaches Python through a real task you actually want to automate or build -- line by line, with Socratic checkpoints throughout.</p>
+                <div class="mode-steps">
+
+                  <div class="mode-step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                      <div class="step-title">Download the mode file into your workspace folder</div>
+                      <div class="step-desc">Save <code>PyBob.yaml</code> directly into the folder you have open in Bob. Bob needs to be able to read it.</div>
+                      <button class="step-download-btn" data-download-file="PyBob.yaml">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download PyBob.yaml
+                      </button>
+                      <button class="step-no-folder" data-ntb="true">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        No folder open?
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                      <div class="step-title">Confirm the file is in your workspace</div>
+                      <div class="step-desc">You should see <code>PyBob.yaml</code> appear in the Explorer panel on the left side of Bob, inside your open folder — just like this:</div>
+                      <div class="step-screenshot">
+                        <img src="Screenshot 2026-07-14 143352.png" alt="Bob Explorer panel showing PyBob.yaml in the workspace folder"/>
+                        <div class="step-screenshot-caption">PyBob.yaml visible in the Bob workspace Explorer</div>
+                      </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        It's there — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                      <div class="step-title">Tell Bob to install the mode</div>
+                      <div class="step-desc">Copy and paste this into Bob. It will read the file, fix the indentation, and write it to <code>.bob/custom_modes.yaml</code>.</div>
+                      <div class="step-prompt">
+                        <pre>Read PyBob.yaml from my workspace and install it as a custom Bob mode by writing it to `.bob/custom_modes.yaml`.
+
+The file needs to be wrapped under a `customModes:` key and the indentation fixed (strip 2 leading spaces from every line of the source, then re-indent each line under the list).
+
+Use the appropriate method for my platform:
+
+- **Windows (PowerShell):** Run `install-pybob-mode.ps1` if it exists in the workspace, otherwise execute this inline:
+  ```powershell
+  $lines = Get-Content PyBob.yaml -Encoding UTF8
+  $fixed = $lines | ForEach-Object { if ($_ -match '^\s') { $_ -replace '^  ', '' } else { $_ } }
+  $out = @("customModes:") + ($fixed | ForEach-Object { "  $_" })
+  New-Item -ItemType Directory -Force -Path .bob | Out-Null
+  $out | Set-Content .bob/custom_modes.yaml -Encoding UTF8
+  ```
+
+- **macOS / Linux (bash):**
+  ```bash
+  mkdir -p .bob && printf 'customModes:\n' > .bob/custom_modes.yaml && sed 's/^  //' PyBob.yaml | sed 's/^/  /' >> .bob/custom_modes.yaml
+  ```
+
+After writing the file, confirm the mode is installed and tell me to switch to "PyBob Python Mentor" in the Bob mode picker.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                      <div class="step-title">Switch to PyBob mode</div>
+                      <div class="step-desc">Click the <strong>modes</strong> button at the bottom-left of the Bob chat input and select <strong>PyBob Python Mentor</strong>.</div>
+                      <div class="mode-switch-screenshot" style="margin-top:10px">
+                    <img src="data:image/png;base64,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IsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPGIgRERERERHlGQMxIiIiIiKiPGMgRkRERERElGcMxIiIiIiIiPKMgRgREREREVGeMRAjIiIiIiLKMwZiREREREREecZAjIiIiIiIKM8YiBEREREREeUZAzEiIiIiIqI8YyBGRERERESUZwzEiIiIiIiI8oyBGBERERERUZ4xECMiIiIiIsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPhNKycin9nw3VVQCA63390+sQERERERGtKpPRCJvNBpPJBKPRCJ1OB5VaDaUy2XYkignEYzGEw2EEAgH4/X54PB74AwH5W+XNcuInBmJERERERLQmrBYLnE4nioqKoNVp5cULEglHMD4+jtHRUXh9PnnxqlpO/MRAjIiIiIiI8spZXIyKigpYbVZ50bJ4PV4MDg5idGxMXrQqlhM/cYwYERERERHlhb2gANu3bUNzS/OKB2EAYLVZ0dzSjO3btsFeUCAvXlcYiBERERER0aqrq63F1ju2rkoAJme1WbH1jq2oq62VF60bDMSIiIiIiGjVmIxG7Nq5AxWVFfKiVVdRWYFdO3fAZDTKi9YcAzEiIiIiIloVjsJCbN+xAyazWV6UNyazGdt37ICjsFBetKYYiBERERER0YpzFhdjS9uWTPr5taRUKrClbQucxcXyojWz9t8KERERERHdVhyFhWhuaZYvXnPNLc3rpmWMgRgREREREa0Yk9GI5pYW+eJ1o7mlZV2MGWMgRkREREREK6apqXFddEecjVKpQFNTo3xx3q3fb4iIiIiIiG4pdbW1a5qYY6FMZvOap7ZnIEZERERERMtmLyhYkxT1S1VRWbGmkz4zECPKg5bmZvzJH/8R/viP/hDNTU3yYiIiIqJbXk1NjXzRureW28xAjGgVGfR6PPbRj+KRRx6B3V6IwkIHHn30UfzOR34bRoNBXp2IiIjoluQsLobVZpUvXvesNuuapbS/5QKxhx/6IB5+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" alt="Bob chat input bar showing the Agent mode dropdown button" loading="lazy" />
+                        <div class="mode-switch-caption">The <strong>modes</strong> button sits at the bottom-left of the Bob chat input — click it to switch modes.</div>
+                      </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        Mode switched — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                      <div class="step-title">Send the start prompt</div>
+                      <div class="step-desc">Copy and send this to kick off your Python learning session:</div>
+                      <div class="step-prompt">
+                        <pre>Start my Python loop. I want to learn Python. Assess my current level and help me pick a project to learn through before we begin.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div></div>
+            </div>
+            <div class="use-case">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+                <div class="uc-title">SqlBob - Query Databases from Scratch</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">SqlBob is a custom Bob mode that turns Bob into a database mentor. It builds a realistic sample dataset in your field, then teaches SQL by having you write real queries against it -- SELECT through window functions -- with instant feedback on every query you write.</p>
+                <div class="mode-steps">
+
+                  <div class="mode-step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                      <div class="step-title">Download the mode file into your workspace folder</div>
+                      <div class="step-desc">Save <code>SqlBob.yaml</code> directly into the folder you have open in Bob. Bob needs to be able to read it.</div>
+                      <button class="step-download-btn" data-download-file="SqlBob.yaml">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download SqlBob.yaml
+                      </button>
+                      <button class="step-no-folder" data-ntb="true">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        No folder open?
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                      <div class="step-title">Confirm the file is in your workspace</div>
+                      <div class="step-desc">You should see <code>SqlBob.yaml</code> appear in the Explorer panel on the left side of Bob, inside your open folder — just like this:</div>
+                      <div class="step-screenshot">
+                        <img src="Screenshot 2026-07-14 143419.png" alt="Bob Explorer panel showing SqlBob.yaml in the workspace folder"/>
+                        <div class="step-screenshot-caption">SqlBob.yaml visible in the Bob workspace Explorer</div>
+                      </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        It's there — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                      <div class="step-title">Tell Bob to install the mode</div>
+                      <div class="step-desc">Copy and paste this into Bob. It will read the file, fix the indentation, and write it to <code>.bob/custom_modes.yaml</code>.</div>
+                      <div class="step-prompt">
+                        <pre>Read SqlBob.yaml from my workspace and install it as a custom Bob mode by writing it to `.bob/custom_modes.yaml`.
+
+The file needs to be wrapped under a `customModes:` key and the indentation fixed (strip 2 leading spaces from every line of the source, then re-indent each line under the list).
+
+Use the appropriate method for my platform:
+
+- **Windows (PowerShell):** Run `install-sqlbob-mode.ps1` if it exists in the workspace, otherwise execute this inline:
+  ```powershell
+  $lines = Get-Content SqlBob.yaml -Encoding UTF8
+  $fixed = $lines | ForEach-Object { if ($_ -match '^\s') { $_ -replace '^  ', '' } else { $_ } }
+  $out = @("customModes:") + ($fixed | ForEach-Object { "  $_" })
+  New-Item -ItemType Directory -Force -Path .bob | Out-Null
+  $out | Set-Content .bob/custom_modes.yaml -Encoding UTF8
+  ```
+
+- **macOS / Linux (bash):**
+  ```bash
+  mkdir -p .bob && printf 'customModes:\n' > .bob/custom_modes.yaml && sed 's/^  //' SqlBob.yaml | sed 's/^/  /' >> .bob/custom_modes.yaml
+  ```
+
+After writing the file, confirm the mode is installed and tell me to switch to "SqlBob Database Mentor" in the Bob mode picker.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                      <div class="step-title">Switch to SqlBob mode</div>
+                      <div class="step-desc">Click the <strong>modes</strong> button at the bottom-left of the Bob chat input and select <strong>SqlBob Database Mentor</strong>.</div>
+                      <div class="mode-switch-screenshot" style="margin-top:10px">
+                    <img src="data:image/png;base64,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IsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPGIgRERERERHlGQMxIiIiIiKiPGMgRkRERERElGcMxIiIiIiIiPKMgRgREREREVGeMRAjIiIiIiLKMwZiREREREREecZAjIiIiIiIKM8YiBEREREREeUZAzEiIiIiIqI8YyBGRERERESUZwzEiIiIiIiI8oyBGBERERERUZ4xECMiIiIiIsozBmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjyjIEYERERERFRnjEQIyIiIiIiyjMGYkRERERERHnGQIyIiIiIiCjPhNKycin9nw3VVQCA63390+sQERERERGtKpPRCJvNBpPJBKPRCJ1OB5VaDaUy2XYkignEYzGEw2EEAgH4/X54PB74AwH5W+XNcuInBmJERERERLQmrBYLnE4nioqKoNVp5cULEglHMD4+jtHRUXh9PnnxqlpO/MRAjIiIiIiI8spZXIyKigpYbVZ50bJ4PV4MDg5idGxMXrQqlhM/cYwYERERERHlhb2gANu3bUNzS/OKB2EAYLVZ0dzSjO3btsFeUCAvXlcYiBERERER0aqrq63F1ju2rkoAJme1WbH1jq2oq62VF60bDMSIiIiIiGjVmIxG7Nq5AxWVFfKiVVdRWYFdO3fAZDTKi9YcAzEiIiIiIloVjsJCbN+xAyazWV6UNyazGdt37ICjsFBetKYYiBERERER0YpzFhdjS9uWTPr5taRUKrClbQucxcXyojWz9t8KERERERHdVhyFhWhuaZYvXnPNLc3rpmWMgRgREREREa0Yk9GI5pYW+eJ1o7mlZV2MGWMgRkREREREK6apqXFddEecjVKpQFNTo3xx3q3fb4iIiIiIiG4pdbW1a5qYY6FMZvOap7ZnIEZERERERMtmLyhYkxT1S1VRWbGmkz4zECPKg5bmZvzJH/8R/viP/hDNTU3yYiIiIqJbXk1NjXzRureW28xAjGgVGfR6PPbRj+KRRx6B3V6IwkIHHn30UfzOR34bRoNBXp2IiIjoluQsLobVZpUvXvesNuuapbS/5QKxhx/6IB5+6IPyxUTrzo7t2/G5z30OmzZtAgD09V3H9eu9AIC6unr8yZ/8Cdq2bJGtRURERHTrqai4dbokyq3VtivNZstfpv9jS0WxHq93ep11o21LKz74wYdQXV2N0ZFhjI6OyasQrZkihwPNTY3Ys3sPfuM3PoDm5mYolUpEIhG89NJLePGll3D+fDs8k5OoqamBVqtFQ0MDdu3cgdKSUpiMBsSiMQSDQflbExEREa1bVosFNRtXp4tfIpHA2bPvYnhkGCVOJwRBkFdZNp1OB7fLjUgkIi+a13Lip1sqECstKUFbWxsAoL29HSOjo/IqRHmnVqnxH/7kj7Fv3z7U1tahuLgYarUGANDd3YWnn34aff39mfqjo6M4d+4cCgvtcDgcUKs1KC4uRm1tHXbu3Im2La04c+YsElJi2l8hIiIiWp+qq6pgsVrki5ctkUjgnXfegd/vRyQcwdjYGMrKylYlGEuICbjcbvnieS0nfhJKy8ql9H82VFcBAK733bxpXE+2tm3Bxz72ewCAn/zkKZw73y6vcsvYs3s3PvKR34ZSqUQoFMITT/wA3T098mp0C2hpbsYjjzwCAJiYmEB/fz/6+/vQ19c/70lps1pRXV2FqqpqVFVVwuEoAgD867/+KzovXZJXz/LhDz2M1taZXRvj8RjGxsZw+PBhdHXfGsdUS3MzDhw4AJ/Ph2eeeQaTHo+8yrLdvWcP9uzZjcHBQfz8588gGovKqxAREdES3L1nD7Q6rXzxsiQSCZw/347Jycms5QX2ArRt2QKFYmVHWEXCEbx97Jh88byWEz+t7CegBdu+fRuUSiWQag5tbFz7SeVoaRxFyeBpYmIC3/3e9/Dcr36F8+0d8wZhSD09Od/eged+9St893v/iImJCQBAsdMpr7pgKpUaZWXl+MhHPoKHH/rgqjw1Wmk7d+6A1WpFZWUlWltb5MXLZjIacccdW2EwGLFx40bU19fJqxAREdESmIzGVQnC2ts7ZgRhADDpnkTHhQuQpExb0orQ6rQwGY3yxauKgdgaqCgvR3lFBRKJBCY9HgiCgKamJqhVannVda24qAifefzT+Ou//ms8+OCD8mLKk3A4jH/7t3/DE098H0888X0cOXoE0WgEgIDm5ma0NDfLV1l3urq6EY/H4PdPoW8JT5Tm4w8E0NvbC0lKwOPxYnBwUF6FiIiIlsBms8kXLYskSTh/vh3udDfB6c+TU/92TbjQ3t6+4sHYSn+W+TAQWwMNjQ0wGY2Y8gdw+tQpSJKEoiIHGhrq5VXXterqKjQ3N8NqMUNxC7S63K4EAXC7XRgeGcXwyCjeeONNHDp0GIAElUqNlpb1H4gdO34c/99f/zd88+++lTWebiU9/8KL+Pp/+a/47ve+typdH4mIiN6LTCaTfNGSSZKE9vab3REFhYDSkpJMeWlJSaanj8vlXvFgbCU/y0IwEMszQRCwta0NgiDA7ZrAuXPnEQqFoNVq0draKq9+2xIEAf/xz/4MX/riF2FewEFvNpnw5S99CX/2p38qL6Ic+vr6EA4nM//o9Zyv7HYgCAI++YmP47OfeXxBc9AZDQZ89jOP45Of+Li8iIiIaMUYV6g7XzoIc7mSLWGCIKC1pSXr/Y1GI5pbmrOCsY6OleumuFKfZaGYrCPP6mpr8dnPfgY6nQ7PP/88Xnr5FXz+P/4ZampqMDo6ir/7u2/BHwjIV4PVYsGjjz6KpqYm6HRaJBIJdHV14fXX38CnP/0p6PV6nD59Gk/+6MeZdQRBwJ27duHBBw/AmUr3GY1G0d3dg5/97GdwT+t3+8lPfBw7duxAKBTCP/3T97Fr1y5s23YH9Ho9otEoOjs78b//9/+BPxBAZUUFPve5/wC9Xp9ZPy0UCuHv//4fMDBP1y9BEPCVL38J5eXlcLlc+OY3/w5en09eDUh99s9//j+isLAQg4M38N/++3+XV1lT9957L+7Zvx/j4+P43j/+o7x4Uf7w3/97FBUV4a233sKhw4flxVnSyToikTB+/OMfY3jkZhbR8rIyPPbYY9DpdBgYGMC/PPkkkEoOcv/996G2tg46nQ6ABK/Xi7fffhunz5zNXMhKS5z4+Mc/Dq1Wh46OdoyOjmH//v3QaDR47bXX0N7ejk984uOw2wsxMDCAV155BR/4wK+jtLQUAOB2u3Hw4EH09Q+gvq4W73//+zPN/R6PBy+88CJ6rlzJbO/+fXtx3333Ix6P4eDB59Bx4QIAQKlUYt++fdja1gar1QJAgCQlMD4+gRdeeB59/QNAqrvvAw/cj7Kycmg0yYyV4XAIFy924lfPPw/M830ZDUbcd9+9qK+vSz0NExCPxzA8PIKjR49mJdIxm0xZn/3FF1/E+9//PlRWVkIQFAgGAzh27DiOHT+e9cOwkG2ciyAI+P3PfgZOZwk8nkn88z//S85rBVL99T/96U/BZivAyMgwvv/ED+RViIiIVsRKJOrIFYQ1tzSjuKgI/f39uHLlKgBg8+ZNqKqqwtj4OC5euJj5nXU4HGhtbVn2uPilJOxYTvy0rlrE2ra0YmvblllflZXJDwoAlZVVM8qnv9q2rM/WpcbGRuh0OkQiEVy7dg2SJOHq1eTBZbfb0djYIF8FhXY7/vRP/xTbtt0BXepAVygUaGxsxG/91qMQhJm7URAEfOyxj+KjH/0oSkpKEI/HEQ5HoFYnu6p96UtfxObURMNyjz76KPbs2Z0JtDQaDbZu3YpPfvITyz7A0yRJwre//R243G4UFhbi8//p8zlbxswmEz7/nz6PwsJCuNxufOc735FXua1cuHgR/f196O1NTvy8VA2NDZljZXR0BEillv30pz+F1tYt0Om0iEQikCQJVqsNH/jAb+BDDz+Uc/8WFxfjnnuSQRgAKJXZx5vFYsbv/M5HUFpaluq8LcBuL8Sjjz6K/fv24pFHHoHNVpAps9kK8PDDD6G8rCzrfeQ0ag0e++jv4p79+2G1WiFJEsLhMARBgN1eAIslmS62bUsrPvaxx7BhQw00Gg2i0ShisSh0Oj2Ki4vlbztDdVUV/uAPPovt27fDZDKntjOZ9KSyshIf+chv495775WvBgAwGPT47d/+bVRVVWfOQ4PBiAMHHsDuu+7K1FvuNiJ1zvzkJ0/D6/XAZivA449/OmfLmNFgwOOPfxo2WwG8Xg+efvqn8ipEREQrRqVeXo4DSZLQ0XEhZxA2m+KiIjS3NGfGjE1MTKCjI/kQdzmW+1kWa93MI/bwQx/EBz/4ENra2mZ9VVdXZ24Uq6ur0da2dUadm6+tMOh1uNzVJf9Ta0atUuOhhx6C1WrByMgonn/+RSQSCUiJBNra2qDVJm+cz559N2u9xz76u9i0aVPqQO3A3//9P+CZXz6L0dFR3HHHHTAYkgHT0NAQzp07DwB44IH7ceCBByCKcbz44ov47vf+ES+/8gquXbuG5uYmmEwmFBTYcOrUaQDAHVu3oqysDGq1GiqVEk899RP88788if6+fjQ2NkCj0cBgMKC7uwv9AwN45dVXMT42lpm0+ODB5/AP3/4OXnn1VfhmadmSi0ajOH3qNO7Ytg2Fdjvu2LYNp0+dRjSaTCtuNpnwhS9+AYV2O1xuN77xN9/AlN8vf5s1t2HDBmyorkYoFMKpU6fkxYvS19eHc+fOz9o6OF1jYwOcTidEMY7z58/D7w9Ar9Pjgfvvx65dO6FQKBEMBvD6629AjIt49NFHUVBgx8jIMJ588kd49bXXcPTtt1FQUACn04mCAhvGx8cw4XLBbDJh69atUKlUMJlMGBkZwZNPPomXX3kFff390KaCc73eAJ1Oh+HhEfzwhz/E8ePHUVFRAavVCo1Gi5qamsy6R4++nTV3WigcxrVr14DUeMOamppUS283xsbG0NBQj127dkGhUKKzsxNP/OAHOHL0KI4fOwGFUgHP5CRcLjc+8Ou/Dru9EKFQED/72c9w8LnncOToUfT3XYdOp808Rcv1fRkNxsz3Eo/HcOLkO3j66Z/i0OFDcLtdqK6uhlqtQYnTiaEbg/B4vFmf3WAwwOVy4cknn8Rrr78OpUqJqspKAAI0Gg3OnU+ejwvdxvnEYjF0dHSgubkJVqsNzc1N6OjoQCwWA1JB2Gc+8zisVhu8Xg9+8IMfIsAJwomIaBVt2rRRvmhRBgYGMDh4I/kfITmlzfSHlF6vF253sheX3W6H1ZqMV4xGIwwGA8YnxgEAwWAQKpUqU74UCoWA3t7r8sVzWk78NLMphVZNc3MjiouT0X1v7zXE4smbp8HBQXhSyQOqqqtRaLdn1iktcaJmY7LlanDwBn70o6fg9fkgSRJOnzmDV159dUa/WLVKjV07d0EQBHR1deOll1/J1Lnc1YWuru7ke5eVo8SZ/TQ+kUjg+RdexLvnzgGpFpoTJ04AqZYxp/PmgMmVMOX34xt/841ky5jdji988Qswm0y3TBC2Hmi1Onz2s7+Pv/ja1/DFL34Bd911F1QqdTKwOHECA4ODaGxsQFGRA9FoFK+99nqmW6ooijh58iTC4TA0Gi025Wgl9Xq9eOaZZ2a9wASDAbz44ovwBwLwBwJ48803MzPTB4MB/OpXv4LH60UgGMCJEyczZSXzpOifPj/I1NQURFEEAERjUbzxxpuZOdLSLVHRaCzrIUDv9T68+NLLmf/nsmVLa+acfOfUabz66quIxqIQRRHn2zvw5ptvIpEQodPp0NTUJF8dXq8Xzz77LDxeL0RRxFtvHsLISLIF0mw2wWI2A8vcRrlAMIgf/OCH8Ho9sFpt+ExqzBiDMCIiuqUJQHNT04J7igCA0+lEc1NTpmVMfk+83q2bQOyXzx7EU0/9GD/5yVOzvg4dOpSpf+jQoRnl019PPfVj/PLZg1l/Y601NTVnuiVdvnw5szwQDOHq1WTLgM1qRVPTzTnFysrKYdDrAABdXZcRiSZvYtO6LnchHA5nLXM6i1FQkByP09LSjO98+x/w3e98O/Pavn0bAECjVkElS5kfiURwLdVVMm1iYgKJRAIqlWpV0npO+f345t9+E+Pj45lgLB2EjY+P45t/+811HYRFU4GFWq2SF83JZDTiU5/8JH7z3/07KJVKtLa04E8/9znUbKiWV10USUqgv78PP/7xUzhy9G0AQHl5OQRBAY1Gg8ceewx/8bWvZV6PP/54arwYMq2y042Ojsw507zL5cbI6M3xVpOTkwiFkgHA5KQHo2NjOcvSXR1nMzg4iEBqDNSdd+7CH/3hH2LP7t3QqLPX6+vvAwBYrVY8/vjj+PCHPoTKioqsOrNJXuwFRCIR9HQnH1BMd/XqVUxNJY+9XD8MPp8P46m53wAgLsYzgZZer8+0Vi9nG3MJBIP44Q//GW63KxOMpYMwt9uFH/7wnxmEERFRXohiQr5oUSorK7F58yZsaW2Fc56HtLk4nU5saW3F5s2bUFlZKS9elOV+lsVaN4EYAJxv78C58+2zvgYGbg6CGxjon1E+/XW+vSPrvdeazWpFXV0tkLoB/cxnPpMVHN199x4g1QqwdevWzHoKxc0xO8FgKPPvuQiCkGlNiMViCIVCOV/BYBCJxPwHXDgczrRGrBavz4dvfet/ZoKxdBD2rW/9zwV101tL6RSrVqttUbO8FxQUoLKyEtu2bcOff/Wr+PCHPwSr1Yr6+pnjBOcSiYTxxBPfx199/ev4q69/HV//L/8VT/7oxxi8kWrmzxrXJSESiSAcDud8pVurpsu1bC6JRCJzXCUSiaynU9PL5jPp8eBnP/u/qTFuAhwOBx588EF84QufxwMP3J/ppvzGG2/i6NtHEY/HoNFo0Nraik996lP4g9//bFbK21yyv5fsBxoAEIvFIYpxYFqr1nxyfV/L2cbZ+AMBPPnkjzLBWDoIe/LJH82axIOIiGilxVPd45dKEARUVVXB4XDIixbM4XCgqqoq51j3xVjuZ1mshd1Z0LI1NTXBPq3L4VzKKypQUV4uX5yzxcVg0M950LW3d+A/feGLOV9f+4u/xI2hIfkqa+ZmMDaBsbFbIwhDKkNg2vRupbNRKpWorqrKkQAiuR/b2trQ2tICQ46slMsVDkfwk5/8BP/jb/4m5+v5F16Ur7KmhkdG8E/ffwL/8i//go6ODsTjMahUauy9+27s27sXSHVDeP31N/CNb3wTr776KiZSfcWdzhJ8+MMfypkERk6SAIVCKV8MtVoFpTJ53qXHLi7FSmxjLtODMZdrgkEYERHlnbxn1q0s35+FgVieNDc3QalUQhRF/PSn/wt/9Md/MuP19tvJdJkmoxENqeyJPp8v0xq1adOmGUFXc3PzjO5kU1NT8Ke68m3ctBHOHF2q1iuvz4e//Ku/wl99/eu3RBAGIKvbXq5xRHIfevhhfOITn8DGjcnBrUNDQ3j22V/i8uVLAACdTocPf/jD+OM//iMolTODg6WYmHABqfdual7/EzzLDQwO4hfPPIOnn3461bVRmDE4OBqL4tjx4/jeP/4TOjqSLeI2mw1VVTezrcoND48AkGb9XjZt2gSzORkkDY8My4sXbSnbOB9/IIBvf+e7+M53v8cgjIiI8i49jOB2kO/PwkAsD4ocDlRv2ACkWk86OzvlVQAAnZ0XEY1GIUyb9PnatesYS42xqa2txUd/93eh1WihUqlw4MAB7Nu3b0Zw5vF6cfnyZUiShAKbDR//+O9lBWMV5eX4g9//LLZvS44VWwl1dbUw5XkSvPUiHo+jpyc5vuiuu+6aMYZJLpG42c3zxo0b+MEPf4hz59vxs//7r3jzzTcyZfF4HEJ69OkydXV1we+fAgDs3LEdd+/ZkwnyNGoN9uzejf/nt35Lttbaqt28Gffs35/1fU4f05h+anXgwIGscXUKhSLz2UQxMedF9cKFC5kWzV07d+DBBx+ERq2BUqlE25ZW3HfffVAolPD7p3BhGWlxl7ONRERE61n64f/tIN+fhYFYHrRuaYUtlUqzr69v1uxzPT09mZvCkpIS1G7ejFg8hl/96nkEg0EIgoDdu+/C3/3d3+Lv/+e38PBDH0Rvby9CoZljx5555llcu5aci6q6uhpf+9p/zoxH+8pXvoyGhoas8WdLce1abyaJRkNDA/7H//jv+Ntv/M2ykhDcqt54400g1eK0e/ed8uIszx58LvPvdEbKtLffPp7590svvYx4anzSco2OjeH1119HLBaFWq3BgQMH8Odf/Sr+4mtfw1e+8mU8+OCDqYmM1w+dToe9e+/GV77yZXzly8nXY489Br3ekJk0GQCqKivxe7/3cXztP/85vvTFL+Kr/+9XMi2T3d1d6OuffYLFKb8fL7/8MkKhIFQqNfbs3o2vfOXL+POvfhUPP/wh6PUGhMNhvPzyK1lJRxZrOdtIRES0nqUzf98O8v1ZGIjlQWtLcqbvWCyGCxdmf6oeCIbQ05NMya3T6dDYmMyeeLGzE9/73j+iv38AkiRBkqTUDeQreP75F2TvkhSJRvAP3/42XnrpZXh9U0gkkgkTEokE3JOTePXV19DePvu2LITL7cb/+d//By6XC4lEcruCweCyxtLcqkZGRzMtnfv370dDfZ28SsbOHTsy/07v47Ta2s2Zf2/btm3FuiYCwLnz7XjqqZ+gv78P8dTUCUi1LF2/3pvVGrceTEyMw+VyZRJcpDOOXrlyBU8//XQmeLlx4waCwQAEQYBOp4MgCPB6PXjjjdfx7MHn5k1l291zBU888QNcvnwpq294NBpFT083vv/97+PCxYtZ6yzWcreRiIhovfIHAoiEZyaqutVEwpG8d/EXSsvKM3cAG6qT4xSu963Pp7Nb27bgYx/7PQDAT37yFM6db5dXec+5c9cu/O7v/g5UKhUOHnwOL7/yirwK5YnRYMTHPvbRzFxrL7zwPE6dPiOvhk9/6lOomNZq+OZbb+HYsWOor6vDvffem5U16K//+r9l5psjIiIiWo/qamtRUbk6PaJu3LiRmQO3vr4O5TkS2q2EwYFBdKcaRBZjOfGT0my2/GX6P8uZGTofnM5itLUlU7ufP38Oo6NL7yp0OxAEAR/60MMoLi5GJBLBkSNHMuPJKP9isRg6Oi5g48YamM0W1NbWYdPGjQgE/FkJPQL+KSiVSpjNZqhUKtRs2ID9+/ahqakJBoMBAHD58iVc7LyEa9eS88sRERERrVfxeBxlZWXyxSvCYrEgkUjAZrOiunp5c63OpaenJ+cUNPNZTvyUMxDzTU2ty64yo6NjMOh16O/vw6HDR+TFt637778Pv/GBD8DtdmMy1Xe1orwcn/j476Gurh6CIKCvrx8vvPDigudootUhiiIudFzEhg3VsFqtsFqtaG1txZbWFng9HrhcbrhSCVs8k5M5syxeuHAB//pvP8f169flRURERETrTiQSgb3ADp1OJy9aEXa7fcHTQC2F1+NF7xLuuxQKBaxWC7ASgZjVaoEgCJia8iMhrc8b+stdXbjc1SVffFurq63D3r13Y/fuu/CBD/w6fuMDH8C+fXvhcDggCAImPR789Kc/hXvyZqsLrR0xIaK9owOTk5NwOAphMBih1xuweXMt3n777ZsVJQlbt7bB7/fj2WefhVqtgsPhwIkTJzAyMjL9LYmIiIjWtYQoovgWmjJpuqtXri4pg7FSoYTFYoYkSfB6Fz/tUtYYscqKCiiVCoyMjCEcye+EZjS7TRs34jd/8zdRUVGeGegvSRJ8U36cPXMaL730ct4HF9LCCIKAxoYGbNu2Dd3dXXjn1OmscqPBiHg8jkg0AoVCAZvVCvfkZFYdIiIiolvB9m3bYE31sLtVeD1enDl7Vr54QXRaHUpKiiGKCQwMDsqL55UViJWWlkCr0WB8fByB4MyU6ERERERERLnYCwqw9Y5kPodbxbl3zy35IbhBr0dxcREi0SiGhxffmykrfX08npyzSKlUTV9MREREREQ0J/fkJAYHFt8ytFYGBwaXHIQBgEqVjJnSMdRiZQdisXQgtnJzFxERERER0XtDd08P/FNT8sXrjn9qaknp6qfLBGKpGGqxsgKxSGoiXo1GM30xERERERHRgnR2XoIors/EfwAgigl0dl6SL160dMyUjqEWKysQi6beRK/XQ6HIKiIiIiIiIpqXPxDAxQsX5IvXjYsXLiw70Z1Cocik60/HUIs1Y4xYLBYDIEG/SvMAEBERERHR7W3C5cLFCxfli9fcxQsXMeFyyRcvWjJWkhCLxVZmjBgAhMLJtPUGg0FeREREREREtCCjY2NoP9++LropimIC7efbMTo2Ji9aknSslI6dlmJGIBYIBIHUmwuCIC8mIiIiIiJakAmXC2dOn17TBB7+qSmcOX16RVrCkJonNh2IpWOnpZgRiEUiEcRiMQgCoNfp5cVEREREREQL5g8E8M6p02uS2n5wYBDvnDq97DFh0+l1eggCEIvFEIlE5MULljWhc5rFYoG9wIZoNIah4WF5MQFoALBLvjAld0vijK85S6415pO3debe9JwW+3cWUj8gAP9rCdtCREREROuDvaAANTU1sNqs8qIV5fV40dvbu6x5wmZTVloKjUYN96QHPp9PXrxgOQMxhUKByopyCIKAsbFxBEMheZX3vA8JwJ/LF9KqGgfw/hlHKxERERHdapzFxaioqFjxgMzr8WJwcHDFxoLJGQ0GFBU5IEkSBgZvIJFY+vi3nIEYABTYbLBaLYjF4rgxNCQvfs9jIJZ/DMSIiIiIbi9WiwVOpxNFRUXQ6rTy4gWJhCMYHx/H6OgovMtooZqPIAgoLyuDSqWE1+vDpMcjr7IoswZiCoUCFeVlUCgUcLncmPL75VXe0xiI5R8DMSIiIqLbl8lohM1mg8lkgtFohE6ng0qthlKZTGshignEYzGEw2EEAgH4/X54PJ4VHf81F4vZDLu9AIlEAoM3hpbVGoa5AjEAsFjMsBcUQBQTGLxxA5I0a9X3HAZi+cdAjIiIiIjWgkKhQHlZGZRKBdyTk/D5lp8FckbWxOl8vimEw2EolQoU2u3yYiIiIiIiotteod0OpVKBcDi8IkEY5gvEAGQyjZhMRlgtFnkxERERERHRbctmtcJoTM4btpJZGOcNxKLRGFwuNwCgoMAGgz65EURERERERLczg94AWyqzo8vlRjQak1dZsjnHiE1ntxfAYjZDkoDh4RFEY1F5lfeUBgDvm2Xyq9xj6WapnJJrjfnkbZ25Nz2nxf6dhdQPSsBT8oVERERERKtArVKjrKwUggD4pqbgdq9caxgWE4gBQFGRA0aDAaKYwOjo2Hs+GCMiIiIiotuPRq2B01kMpVKBQDCI8fEJeZVlm7dr4nTj4xMIBINQKhUoLS2B0aCXVyEiIiIiIrplGQ16lJaWrGoQhsUGYpgWjAkCUFRUBJt1ZWfDJiIiIiIiWgsFNhuKioogCFjVIAxLCcSQCsZ8U8m0jTabFcVFRRCEJQwkIiIiIiIiWmMKhQLO4mJYrcks8b6pqVUNwrDYMWJyZpMJhYXJ+cXicTGvM1sTEREREREtl8lohM1mg0qlBFLZEaf8fnm1FbesQAwANBo17AUF0Ol0QCrdvcfjRTAUlFclIiIiIiJaF4wGPaxWGzQaNQAgHA7DPTm5oinq57LsQCzNYjHDZrVCoUj2doxGo5ic9CIUDsmrEhERERERrQm9To+CAis0Gg0AIJFIwOP1wudLDr3KlxULxJDqW2m1WGCxmDNjxkQxgVAohGAwhFA4NMscW0RERERERCtPEAQY9Dro9Qbo9XoolcmGI0mS4PNNwevzIZFIyFdbdSsaiKUpFAqYTCaYTUao1cmmvrRgMIRIJAJRFJFISBBFEaIoIi7Gs+oREREREREthEKhgEJQQKlUQqlUQqEQoFQqodVqYZBNuRWLxTDlD8Dv969JAJa2KoHYdFqtFkajAXqdbkZQRkREREREtNpisRhC4TACgSAikYi8eE2seiA2nUqlgkajgVajgUqtgkqlgkqpgkIhMP09EREREREtmSRJSCQkxMU44vE44rE4ItEootEo4vH11/sur4EYERERERERLXFCZyIiIiIiIlo6BmJERERERER5xkCMiIiIiIgozxiIERERERER5RkDMSIiIiIiojxjIEZERERERJRnDMSIiIiIiIjy7P8HValGHXzaEzAAAAAASUVORK5CYII=" alt="Bob chat input bar showing the Agent mode dropdown button" loading="lazy" />
+                        <div class="mode-switch-caption">The <strong>modes</strong> button sits at the bottom-left of the Bob chat input — click it to switch modes.</div>
+                      </div>
+                      <button class="step-confirm-btn" data-confirm-step="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        Mode switched — continue
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mode-step step-hidden">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                      <div class="step-title">Send the start prompt</div>
+                      <div class="step-desc">Copy and send this to kick off your SQL learning session:</div>
+                      <div class="step-prompt">
+                        <pre>Start my SQL loop. I want to learn SQL and databases. Assess my current level and create a sample database in my field so we can start querying immediately.</pre>
+                        <button class="copy-btn">Copy</button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div></div>
+            </div>
+
+          </div>
+          <div class="card-starting-prompt">
+            <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
+            <div class="csp-text">"I've never written quantum code before. Set up a beginner-friendly Qiskit environment and walk me through my first quantum circuit, step by step."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TRACK C: Bring Your Own ─────────────────────── -->
+    <div class="bubble-card track-c" id="card-c">
+      <div class="card-summary">
+        <div class="card-icon" aria-label="Lightbulb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--cc)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21h6M12 3a6 6 0 0 1 4.24 10.24C15.5 14 15 15 15 16H9c0-1-.5-2-1.24-2.76A6 6 0 0 1 12 3z"/>
+          </svg>
+        </div>
+        <div class="card-text">
+          <div class="card-label">Track C</div>
+          <div class="card-title">Bring Your Own</div>
+          <div class="card-desc">Have a specific <strong>file, idea, or problem</strong> in mind? Bring it. If none of the other tracks match what you're actually trying to solve, we'd rather you work on <strong>something real</strong>.</div>
+          <div class="card-meta">
+            <span class="card-tag">Any background</span>
+            <span class="card-tag">Your own idea</span>
+            <span class="card-tag">Open-ended</span>
+            <span class="card-tag">Goal set together</span>
+          </div>
+        </div>
+        <div class="card-chevron" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 5 5-5"/></svg>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="card-detail-inner">
+          <div class="detail-intro">Answer three quick questions below and we will generate a custom Bob prompt matched to your idea, your biggest blocker, and what you want to accomplish at Winn Dixie.</div>
+
+          <div class="quiz-section" id="quiz-c">
+            <div class="quiz-q" id="dq1">
+              <h5>1. What kind of idea do you have?</h5>
+              <div class="quiz-opts">
+                <div class="quiz-opt" data-q="dq1" data-v="startup"><div class="qdot"></div> A process improvement or automation idea</div>
+                <div class="quiz-opt" data-q="dq1" data-v="app"><div class="qdot"></div> A dashboard or internal tool I want to build</div>
+                <div class="quiz-opt" data-q="dq1" data-v="research"><div class="qdot"></div> A data or analytics project</div>
+                <div class="quiz-opt" data-q="dq1" data-v="notyet"><div class="qdot"></div> I do not have one yet -- help me find one</div>
+              </div>
+            </div>
+
+            <div class="quiz-q" id="dq2" style="display:none">
+              <h5>2. What is the biggest thing holding you back?</h5>
+              <div class="quiz-opts">
+                <div class="quiz-opt" data-q="dq2" data-v="validation"><div class="qdot"></div> I am not sure if my idea is worth pursuing</div>
+                <div class="quiz-opt" data-q="dq2" data-v="technical"><div class="qdot"></div> I do not know how to build it technically</div>
+                <div class="quiz-opt" data-q="dq2" data-v="pitch"><div class="qdot"></div> I need to pitch it to leadership or stakeholders</div>
+                <div class="quiz-opt" data-q="dq2" data-v="team"><div class="qdot"></div> I need collaborators or buy-in from my team</div>
+              </div>
+            </div>
+
+            <div class="quiz-q" id="dq3" style="display:none">
+              <h5>3. What outcome matters most to you?</h5>
+              <div class="quiz-opts">
+                <div class="quiz-opt" data-q="dq3" data-v="efficiency"><div class="qdot"></div> Save time or reduce manual work</div>
+                <div class="quiz-opt" data-q="dq3" data-v="visibility"><div class="qdot"></div> Better visibility into data or operations</div>
+                <div class="quiz-opt" data-q="dq3" data-v="customer"><div class="qdot"></div> Improve the customer or associate experience</div>
+                <div class="quiz-opt" data-q="dq3" data-v="prototype"><div class="qdot"></div> Walk away with a working prototype today</div>
+              </div>
+              <button class="quiz-reveal-btn" id="quiz-reveal-btn">Generate My Bob Prompt &#x2192;</button>
+            </div>
+
+            <div class="quiz-result-box" id="quiz-result-box"></div>
+          </div>
+
+          <div class="card-starting-prompt">
+            <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
+            <div class="csp-text">"I have my own idea: [describe it]. Help me turn this into something working I can see and test."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end tracks-stream -->
+</section>
+
+<footer>Made with IBM Bob &nbsp;&middot;&nbsp; Winn Dixie Bobathon 2026 &nbsp;&middot;&nbsp; Winn-Dixie Stores</footer>
+
+<script>
+(function() {
+
+  // ── STARFIELD ──────────────────────────────────────────
+  var c = document.getElementById('stars-canvas');
+  var ctx = c.getContext('2d');
+  var W, H, stars = [];
+  function resizeStars() {
+    W = c.width  = window.innerWidth;
+    H = c.height = Math.max(document.body.scrollHeight, window.innerHeight);
+  }
+  function initStars() {
+    resizeStars();
+    stars = [];
+    for (var i = 0; i < 180; i++) {
+      stars.push({
+        x:  Math.random() * W,
+        y:  Math.random() * H,
+        r:  Math.random() * 1.4 + 0.3,
+        a:  Math.random(),
+        da: (Math.random() - 0.5) * 0.005
+      });
+    }
+  }
+  function drawStars() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      s.a = Math.max(0.08, Math.min(1, s.a + s.da));
+      if (s.a <= 0.08 || s.a >= 1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(180,200,255,' + s.a + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+  window.addEventListener('resize', initStars);
+  initStars();
+  drawStars();
+
+  // ── HERO SCROLL CTA ────────────────────────────────────
+  document.getElementById('hero-cta-btn').addEventListener('click', function() {
+    document.getElementById('tracks-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ── NEW TO BOB MODAL ───────────────────────────────────
+  var ntbOverlay = document.getElementById('ntb-overlay');
+  function openNtb() {
+    ntbOverlay.classList.add('active');
+    document.getElementById('ntb-close').focus();
+  }
+  document.getElementById('new-to-bob-btn').addEventListener('click', openNtb);
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('[data-ntb]')) openNtb();
+  });
+  document.getElementById('ntb-close').addEventListener('click', function() {
+    ntbOverlay.classList.remove('active');
+  });
+  ntbOverlay.addEventListener('click', function(e) {
+    if (e.target === ntbOverlay) ntbOverlay.classList.remove('active');
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') ntbOverlay.classList.remove('active');
+  });
+
+  // ── BUBBLE POP-IN via IntersectionObserver ─────────────
+  // Stagger 60ms per card, capped at 420ms total
+  var cards = document.querySelectorAll('.bubble-card');
+  if ('IntersectionObserver' in window) {
+    var cardObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var idx = Array.prototype.indexOf.call(cards, entry.target);
+          var delay = Math.min(idx * 60, 420);
+          setTimeout(function(t) {
+            t.classList.add('bubble-in');
+          }, delay, entry.target);
+          cardObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.10 });
+    cards.forEach(function(card) { cardObserver.observe(card); });
+  } else {
+    cards.forEach(function(card) { card.classList.add('bubble-in'); });
+  }
+
+  // ── TRACK CARD TOGGLE (open/close) ─────────────────────
+  cards.forEach(function(card) {
+    var summary = card.querySelector('.card-summary');
+    summary.addEventListener('click', function() {
+      var isOpen = card.classList.contains('open');
+      cards.forEach(function(c) { c.classList.remove('open'); });
+      if (!isOpen) {
+        card.classList.add('open');
+        setTimeout(function() {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+        if (card.id === 'card-c') {
+          setTimeout(function() {
+            document.getElementById('dq1').classList.add('qvisible');
+          }, 320);
+        }
+      }
+    });
+  });
+
+  // ── USE CASE ACCORDION ─────────────────────────────────
+  var ucHeaders = document.querySelectorAll('.use-case-header');
+  ucHeaders.forEach(function(header) {
+    header.addEventListener('click', function() {
+      var uc = header.closest('.use-case');
+      var isOpen = uc.classList.contains('uc-open');
+      uc.closest('.use-cases').querySelectorAll('.use-case').forEach(function(s) {
+        s.classList.remove('uc-open');
+      });
+      if (!isOpen) uc.classList.add('uc-open');
+    });
+  });
+
+  // ── DOWNLOAD BUTTONS ───────────────────────────────────
+  // Add pulse to all download buttons on load
+  document.querySelectorAll('[data-download-file]').forEach(function(b) {
+    b.classList.add('pulse-cta');
+  });
+
+  // Fetch the YAML file and trigger a real browser download,
+  // then reveal step 2 in the same .mode-steps container.
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-download-file]');
+    if (!btn) return;
+    btn.classList.remove('pulse-cta');
+    var filename = btn.getAttribute('data-download-file');
+    btn.disabled = true;
+    fetch(filename)
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.blob();
+      })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        // Mark button as done
+        btn.classList.add('downloaded');
+        btn.querySelector('svg').style.display = 'none';
+        // Update the text node inside the button
+        for (var i = btn.childNodes.length - 1; i >= 0; i--) {
+          if (btn.childNodes[i].nodeType === 3 && btn.childNodes[i].textContent.trim()) {
+            btn.childNodes[i].textContent = ' \u2713 Downloaded!';
+            break;
+          }
+        }
+        // Reveal step 2 in this mode-steps block
+        var stepsBlock = btn.closest('.mode-steps');
+        if (stepsBlock) revealStep(stepsBlock, 2);
+      })
+      .catch(function() {
+        // Fallback: plain link download
+        var a = document.createElement('a');
+        a.href = filename;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        btn.disabled = false;
+        var stepsBlock = btn.closest('.mode-steps');
+        if (stepsBlock) revealStep(stepsBlock, 2);
+      });
+  });
+
+  // ── CONFIRM BUTTON ("It's there — continue") ───────────
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-confirm-step]');
+    if (!btn) return;
+    btn.classList.remove('pulse-cta');
+    btn.disabled = true;
+    btn.textContent = '\u2713 Confirmed';
+    btn.style.background = 'var(--ca)';
+    btn.style.color = 'white';
+    var parentStep = btn.closest('.mode-step');
+    var currentNum = parentStep ? parseInt(parentStep.querySelector('.step-num').textContent.trim(), 10) : 2;
+    var stepsBlock = btn.closest('.mode-steps');
+    if (stepsBlock) revealStep(stepsBlock, currentNum + 1);
+    // If this confirm is inside Track A Step 1, unlock the Step 2 accordion
+    if (btn.closest('#card-a')) unlockUcStep('uc-step2-a');
+  });
+
+  function revealStep(stepsBlock, stepNum) {
+    var steps = stepsBlock.querySelectorAll('.mode-step');
+    steps.forEach(function(s) {
+      var num = parseInt(s.querySelector('.step-num').textContent.trim(), 10);
+      if (num === stepNum && s.classList.contains('step-hidden')) {
+        s.classList.remove('step-hidden');
+        s.classList.add('step-reveal');
+        // pulse the action button in the newly revealed step
+        setTimeout(function() {
+          if (stepNum === 2 || stepNum === 4) {
+            var cb = s.querySelector('.step-confirm-btn');
+            if (cb) cb.classList.add('pulse-cta');
+          } else if (stepNum === 3 || stepNum === 5) {
+            var cp = s.querySelector('.copy-btn');
+            if (cp) cp.classList.add('pulse-cta');
+          }
+          s.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 60);
+      }
+    });
+  }
+
+  // ── COPY BUTTONS ───────────────────────────────────────
+  document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('copy-btn')) return;
+    var btn = e.target;
+    var pre = btn.parentElement.querySelector('pre');
+    if (!pre) return;
+    var text = pre.textContent;
+    function done() {
+      btn.classList.remove('pulse-cta');
+      btn.textContent = '\u2713 Copied!';
+      btn.classList.remove('copied');
+      void btn.offsetWidth; // force reflow so animation retriggers
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+      // If this copy-btn is inside a step-3 mode-step, reveal step 4
+      var parentStep = btn.closest('.mode-step');
+      if (parentStep) {
+        var stepNum = parseInt(parentStep.querySelector('.step-num').textContent.trim(), 10);
+        if (stepNum === 3) {
+          var stepsBlock = parentStep.closest('.mode-steps');
+          if (stepsBlock) revealStep(stepsBlock, 4);
+        }
+      }
+      // Track A accordion unlock: copy in uc-step2-a → unlock uc-step3-a, etc.
+      var parentUc = btn.closest('.use-case');
+      if (parentUc) {
+        if (parentUc.id === 'uc-step2-a') unlockUcStep('uc-step3-a');
+        else if (parentUc.id === 'uc-step3-a') unlockUcStep('uc-step4-a');
+      }
+    }
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(done).catch(function() {
+        fallbackCopy(text); done();
+      });
+    } else {
+      fallbackCopy(text); done();
+    }
+  });
+  function unlockUcStep(id) {
+    var el = document.getElementById(id);
+    if (!el || !el.classList.contains('uc-locked')) return;
+    el.classList.remove('uc-locked');
+    el.classList.add('uc-unlocked');
+    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ── QUIZ (Track D) ─────────────────────────────────────
+  var quizAnswers = {};
+
+  document.addEventListener('click', function(e) {
+    var opt = e.target.closest('.quiz-opt');
+    if (!opt) return;
+    var qId = opt.getAttribute('data-q');
+    var val = opt.getAttribute('data-v');
+    if (!qId || !val) return;
+
+    opt.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach(function(o) {
+      o.classList.remove('selected');
+    });
+    opt.classList.add('selected');
+    quizAnswers[qId] = val;
+
+    if (qId === 'dq1') {
+      setTimeout(function() {
+        var dq2 = document.getElementById('dq2');
+        dq2.style.display = 'block';
+        setTimeout(function() { dq2.classList.add('qvisible'); }, 30);
+        dq2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    } else if (qId === 'dq2') {
+      setTimeout(function() {
+        var dq3 = document.getElementById('dq3');
+        dq3.style.display = 'block';
+        setTimeout(function() { dq3.classList.add('qvisible'); }, 30);
+        dq3.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    } else if (qId === 'dq3') {
+      setTimeout(function() {
+        var revealBtn = document.getElementById('quiz-reveal-btn');
+        revealBtn.style.display = 'flex';
+        setTimeout(function() { revealBtn.classList.add('btn-visible'); }, 30);
+        revealBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    }
+  });
+
+  document.getElementById('quiz-reveal-btn').addEventListener('click', function() {
+    var type    = quizAnswers['dq1'] || 'startup';
+    var blocker = quizAnswers['dq2'] || 'validation';
+    var res     = quizAnswers['dq3'] || 'efficiency';
+
+    // Blocker-specific closing line baked into the prompt
+    var blockerLine = {
+      validation: 'My biggest concern right now is whether this is actually worth pursuing — help me stress-test the idea before I invest more time.',
+      technical:  'My biggest blocker is the technical side — I need a concrete plan for how to actually build this, not just theory.',
+      pitch:      'My immediate goal is a compelling pitch for leadership or key stakeholders at Winn Dixie.',
+      team:       'I also need help thinking through what kind of collaborators or buy-in from my team I need to make this work.'
+    };
+
+    // Outcome-specific closing line
+    var resourceLine = {
+      efficiency:  'Finally, describe the 2-3 specific steps I should take this week to start saving time or reducing manual work with this idea.',
+      visibility:  'Finally, suggest how I could build a simple dashboard or report that makes this data immediately visible and useful to my team.',
+      customer:    'Finally, describe how this would improve the experience for Winn Dixie customers or associates and what metrics would prove it.',
+      prototype:   'Finally, give me a concrete plan for building a working prototype I can demo by the end of today.'
+    };
+
+    var basePrompts = {
+      startup:  "I have a process improvement idea for Winn Dixie: [describe your idea in 2-3 sentences]. I work in [your department/role]. Run a quick validation: identify the top 3 problems this solves, list any known obstacles, name the biggest risk, and give me 5 questions I should ask stakeholders this week.",
+      app:      "I want to build an internal tool or dashboard that [describe what it does] for Winn Dixie. I currently know [your tech skills]. Give me: a feature list for a V1, a recommended approach, a rough time estimate to build the core, and 3 risks I should plan for.",
+      research: "I want to do a data or analytics project on [your topic] for Winn Dixie's [department]. Identify 2-3 key questions the data could answer, write a 150-word problem statement, suggest an appropriate methodology, and list the data sources I'd likely need.",
+      notyet:   "I work at Winn Dixie in [your role/department] and I want to find a project idea that could make a real difference. Ask me 5 questions — one at a time — about my day-to-day frustrations, what I wish were automated, and the kind of impact I want to make. After I answer all 5, generate 3 project ideas tailored specifically to me."
+    };
+
+    var prompt = basePrompts[type] + '\n\n' + blockerLine[blocker] + '\n\n' + resourceLine[res];
+
+    var box = document.getElementById('quiz-result-box');
+    box.innerHTML =
+      '<div class="prompt-box" style="margin-top:0">' +
+        '<div class="prompt-label">Your custom Bob prompt — paste this in</div>' +
+        '<pre>' + prompt + '</pre>' +
+        '<button class="copy-btn">Copy</button>' +
+      '</div>';
+    box.style.display = 'block';
+    // Trigger result-reveal animation
+    void box.offsetWidth;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+})();
+</script>
+
+</body>
+</html>
