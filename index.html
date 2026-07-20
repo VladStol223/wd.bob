@@ -935,7 +935,7 @@
     Winn Dixie x IBM Bobathon 2026
   </div>
   <h1>What Could <span>AI</span> Do<br/>For You?</h1>
-  <p>Three tracks. Pick the one that fits where you are today. Click in, grab a prompt, and build something real.</p>
+  <p>Four tracks. Pick the one that fits where you are today. Click in, grab a prompt, and build something real.</p>
   <button class="hero-cta" id="hero-cta-btn">
     Explore the Tracks
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -996,7 +996,7 @@
 <section class="scroll-section" id="tracks-section">
   <div class="section-intro">
     <h2>Choose Your Track</h2>
-    <p>Each bubble below is a different path into AI with Bob. Scroll down and click to open any track.</p>
+    <p>Each bubble below is a different path into AI with Bob. Scroll down and click to open any track. There are four to choose from.</p>
     <div class="divider"></div>
   </div>
 
@@ -1016,10 +1016,10 @@
         <div class="card-text">
           <div class="card-label">Track A</div>
           <div class="card-title">Supply Chain Operations Dashboard</div>
-          <div class="card-desc">Step into the role of a regional operations director and use Bob to build a live, visual supply chain dashboard — a draggable network map, per-store floor plan views, and a delivery timeline. No coding experience needed.</div>
+          <div class="card-desc">Step into the role of a regional operations director and use Bob to build a live supply chain dashboard — a draggable network map with <strong>animated delivery trucks</strong>, per-store floor plan views, and a delivery timeline. Data streams live from GitHub. No coding experience needed.</div>
           <div class="card-meta">
             <span class="card-tag">No experience needed</span>
-            <span class="card-tag">Mock data included</span>
+            <span class="card-tag">Live data feed</span>
             <span class="card-tag">~30 min</span>
             <span class="card-tag">Fully guided</span>
           </div>
@@ -1030,57 +1030,42 @@
       </div>
       <div class="card-detail">
         <div class="card-detail-inner">
-          <div class="detail-intro">You're a regional operations director at Winn-Dixie. It's Monday morning and you've just been asked to get ahead of a potential supply chain disruption before the exec briefing at noon. In the next 30 minutes, you'll use Bob to turn a raw data file into a fully interactive operations dashboard — a network map you can drag around, store floor plans you can click into, and a live delivery tracker. Just follow the steps below.</div>
+          <div class="detail-intro">You're a regional operations director at Winn-Dixie. It's Monday morning and you've just been asked to get ahead of a potential supply chain disruption before the exec briefing at noon. In the next 30 minutes, you'll use Bob to build a fully interactive operations dashboard — a live network map with animated delivery trucks driving warehouse-to-store routes in real time, store floor plans you can click into, and a delivery tracker. The data streams live from a hosted feed so everyone in the room sees the same thing. Just follow the steps below.</div>
 
           <div class="use-cases">
 
             <div class="use-case">
               <div class="use-case-header">
                 <div class="uc-num">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 </div>
-                <div class="uc-title">Step 1 — Download the data file</div>
+                <div class="uc-title">Step 1 — Connect to the live data feed</div>
                 <div class="uc-arrow" aria-hidden="true">
                   <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
                 </div>
               </div>
               <div class="uc-body"><div class="uc-body-inner">
-                <p class="uc-desc">This JSON file contains all the mock data Bob will use to build your dashboard — 3 warehouses, 12 stores, inventory levels, floor plan layouts, and 15 active deliveries. Save it directly into the folder you have open in Bob.</p>
+                <p class="uc-desc">The dashboard data is hosted live on GitHub Pages — 3 warehouses, 12 stores, inventory levels, floor plans, and 15 delivery routes. No file to download. Copy the prompt below and paste it into Bob to get started.</p>
                 <div class="mode-steps">
 
                   <div class="mode-step">
                     <div class="step-num">1</div>
                     <div class="step-body">
-                      <div class="step-title">Download the data file into your workspace folder</div>
-                      <div class="step-desc">Save <code>winn-dixie-data.js</code> directly into the folder you have open in Bob. This file contains all the mock data the dashboard will read — it must be in the same folder as <code>dashboard.html</code>.</div>
-                      <button class="step-download-btn" data-download-file="winn-dixie-data.js">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download winn-dixie-data.js
-                      </button>
+                      <div class="step-title">Tell Bob the live data URL and create the dashboard file</div>
+                      <div class="step-desc">Copy this prompt and paste it into Bob. It tells Bob where to fetch the live data from and asks it to create <code>dashboard.html</code> in your workspace.</div>
+                      <div class="step-prompt">
+                        <pre>The supply chain data for this dashboard is hosted live at:
+https://vladstol223.github.io/wd.bob/winn-dixie-data.json
+
+I'll be building a `dashboard.html` file that fetches this URL at runtime using `fetch()`. Store the result in a module-scoped variable called `WD` (e.g. `let WD = null`) once the fetch resolves. Do not embed or hardcode any of the data — always read it from `WD` at runtime.
+
+Confirm you understand the data URL and the fetch pattern, then tell me you are ready for the next prompt to build the dashboard.</pre>
+                        <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
+                      </div>
                       <button class="step-no-folder" data-ntb="true">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                         No folder open?
                       </button>
-                    </div>
-                  </div>
-
-                  <div class="mode-step step-hidden">
-                    <div class="step-num">2</div>
-                    <div class="step-body">
-                      <div class="step-title">Confirm the file is in your workspace</div>
-                      <div class="step-desc">You should see <code>winn-dixie-data.js</code> appear in the Explorer panel on the left side of Bob, inside your open folder. Once it's there, click continue below.</div>
-                      <button class="step-confirm-btn" data-confirm-step="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                        It's there — continue
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="mode-step step-hidden">
-                    <div class="step-num">3</div>
-                    <div class="step-body">
-                      <div class="step-title">You're ready for Step 2</div>
-                      <div class="step-desc">The data is in place. Open the next step below to build the network map.</div>
                     </div>
                   </div>
 
@@ -1099,42 +1084,107 @@
                 </div>
               </div>
               <div class="uc-body"><div class="uc-body-inner">
-                <p class="uc-desc">Paste this prompt into Bob. It will create <code>dashboard.html</code> — a draggable, zoomable map showing all your warehouses and stores as nodes, connected by supply lines and color-coded by stock health. The dashboard loads its data from <code>winn-dixie-data.js</code> at runtime, so Bob never has to embed the map image.</p>
+                <p class="uc-desc">Paste this prompt into Bob. It will create <code>dashboard.html</code> — a live map fetching data from GitHub Pages, with animated top-down delivery trucks driving their routes in real time, color-coded by status.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 2</div>
-                  <pre>Create a new file called `dashboard.html` in my workspace.
+                  <pre>Create a new file called `dashboard.html` in my workspace. It must be a fully self-contained HTML page (all CSS and JS inline — no external scripts or stylesheets).
 
-The file must load its data from `winn-dixie-data.js` using a `<script>` tag: `<script src="winn-dixie-data.js"></script>`. That file defines a global variable `window.WINN_DIXIE_DATA` containing all warehouses, stores, deliveries, and the map background. Do NOT read, embed, or inline any content from `winn-dixie-data.js` into the HTML — just reference it with the script tag. Both files sit in the same folder so the relative path `winn-dixie-data.js` will resolve correctly when opened from the filesystem.
-
-The file should be a self-contained HTML page (all CSS and JS inline except for the data script tag) with the following:
+**Data loading:**
+At the top of the `<script>` block, fetch the data from the live URL and store it in a module-scoped variable:
+```
+const DATA_URL = 'https://vladstol223.github.io/wd.bob/winn-dixie-data.json';
+let WD = null;
+fetch(DATA_URL)
+  .then(r => r.json())
+  .then(data => { WD = data; initDashboard(); });
+```
+All runtime code reads from `WD`. Do NOT hardcode or embed any data values.
 
 **Header:**
 - Dark navy background (#002147), white text
 - Title: "Winn-Dixie Operations Dashboard"
 - Subtitle: "Supply Chain Overview — Live View"
-- A legend row in the header showing: gold hexagon = Warehouse, colored circle = Store (green ≥70% stock, yellow 40–69%, red &lt;40%)
+- Legend row: gold hexagon = Warehouse, colored circle = Store (green ≥70%, yellow 40–69%, red &lt;40%), colored truck icon = Delivery (green = on time, yellow = delayed, grey = delivered)
 
 **Network Map (main area, fills most of page height):**
-- Access data via `window.WINN_DIXIE_DATA`. The `map_background` object has `data_uri_prefix` and `base64` fields — construct the full image URI as `data_uri_prefix + base64` and set it as the CSS `background-image` of the map container.
-- The map container background color (visible before/around the image) must be `#abd3df` — the same color as the water on the map so there is no harsh edge
-- The map image is 1792×1536px. The SVG canvas must be the same aspect ratio, scaled to fill the container. All node x/y coordinates in the JSON are pixel positions within that 1792×1536 space — scale them proportionally to the rendered SVG size.
-- Each warehouse is a gold (#F0AB00) hexagon (28px radius), labeled below with its name and city. Each store is a circle (14px radius), colored by the average of its sections' stock_pct: green (#22c55e) if ≥ 70, yellow (#eab308) if 40–69, red (#ef4444) if &lt;40, labeled below with city name.
-- All node labels (warehouse name, warehouse city, store city) must be fully black (`#000000`) with no white stroke or outline — just plain black text so they are readable against the map
-- Labels must never overlap each other or their node shape. Position each label by checking its text length and shifting it left/right or up/down if it would collide with an adjacent node's label. At minimum, offset store labels 20px below the circle and warehouse labels 36px below the hexagon, and if two labels are within 80px of each other horizontally, alternate the vertical offset (one at +20px, the next at +38px) so they stack instead of collide.
-- Draw a line from each store to its warehouse (look up via warehouse_id), colored to match the store's health color, 35% opacity
-- Pan by clicking and dragging the background; zoom with the scroll wheel — plain JS, no libraries. The background image and all nodes must move and scale together.
-- A "Reset View" button in the bottom-right corner resets pan/zoom to default
-- Clicking a node highlights it with a white ring drawn as an SVG `circle` or `polygon` element — do NOT use an HTML tooltip, div overlay, or `<rect>` for the highlight. The selection indicator must be a pure SVG element (ring/outline) only, with no filled rectangle anywhere.
+- `WD.map_background` has `data_uri_prefix` and `base64` fields — construct the full image URI as `data_uri_prefix + base64` and set it as the CSS `background-image` of the map container.
+- Map container background color: `#abd3df`
+- The map image is 1792×1536px. The SVG canvas must match that aspect ratio, scaled to fill the container. All node x/y coordinates are pixel positions within 1792×1536 — scale proportionally to the rendered SVG size.
+- Each warehouse: gold (#F0AB00) hexagon, 28px radius, labeled below with name + city in plain black (#000000), no stroke.
+- Each store: circle, 14px radius, colored by average section stock_pct (green #22c55e ≥70, yellow #eab308 40–69, red #ef4444 &lt;40), labeled below with city in plain black.
+- Labels must not overlap — offset store labels 20px below circle, warehouse labels 36px below hexagon; if two labels are within 80px horizontally, alternate vertical offset (+20px / +38px).
+- Draw a line from each store to its warehouse (via warehouse_id), colored to match store health, 35% opacity.
+- Pan by drag, zoom by scroll wheel — plain JS, no libraries. Background + all SVG elements move together.
+- "Reset View" button bottom-right.
+- Clicking a warehouse or store node highlights it with a white SVG ring (pure SVG circle/polygon element — no div overlay, no rect).
+
+**Animated delivery trucks:**
+Add a truck animation layer on top of the map SVG. For each delivery in `WD.deliveries`, create an SVG `&lt;g&gt;` element (truck group) with `data-delivery-id` set to the delivery id.
+
+Truck shape (top-down view, drawn in local coordinates centered at 0,0):
+- Cab: rounded rect, width 10, height 14, rx 3, centered at (0, -5) — this is the front
+- Trailer: rect, width 8, height 10, centered at (0, 7)
+- Both filled with the truck's status color. No stroke.
+
+Status colors:
+- `on_time` → #22c55e (green)
+- `delayed` → #eab308 (yellow)
+- `delivered` → #6b7280 (grey)
+
+Truck position simulation (deterministic, wall-clock synchronized — identical on all laptops):
+```
+const CYCLE_MS = 120000; // 120 real seconds per full round-trip
+const totalDeliveries = WD.deliveries.length;
+
+function getTruckState(delivery, index) {
+  const offsetMs = (index / totalDeliveries) * CYCLE_MS;
+  const phase = ((Date.now() + offsetMs) % CYCLE_MS) / CYCLE_MS; // 0..1
+
+  const wh = WD.warehouses.find(w => w.id === delivery.from_warehouse_id);
+  const st = WD.stores.find(s => s.id === delivery.to_store_id);
+
+  // Scale warehouse and store pixel coords to rendered SVG size
+  const scaleX = svgWidth / 1792;
+  const scaleY = svgHeight / 1536;
+  const wx = wh.x * scaleX, wy = wh.y * scaleY;
+  const sx = st.x * scaleX, sy = st.y * scaleY;
+
+  let t, x, y, dx, dy;
+  if (phase &lt; 0.5) {
+    // Outbound: warehouse → store
+    t = phase / 0.5;
+    x = wx + (sx - wx) * t;
+    y = wy + (sy - wy) * t;
+    dx = sx - wx; dy = sy - wy;
+  } else {
+    // Return: store → warehouse
+    t = (phase - 0.5) / 0.5;
+    x = sx + (wx - sx) * t;
+    y = sy + (wy - sy) * t;
+    dx = wx - sx; dy = wy - sy;
+  }
+
+  // +90 corrects for SVG default orientation (truck drawn pointing up)
+  const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+  return { x, y, angleDeg };
+}
+```
+
+Run a `setInterval` at 33ms. Each tick: for every truck `&lt;g&gt;`, call `getTruckState`, then set its `transform` attribute to `translate(x, y) rotate(angleDeg)`. Do NOT rebuild the DOM each tick — only update the `transform` attribute.
+
+Each truck `&lt;g&gt;` must have `cursor: pointer` style and a `data-delivery-id` attribute. Clicking a truck selects that delivery (for the side panel in Step 3).
+
+When the map is panned or zoomed, all truck groups move with the rest of the SVG content naturally (they are children of the same panned/zoomed SVG group).
 
 **Footer:**
-- One line: "Data last updated: July 14, 2026 — Mock data for demonstration purposes"
+- One line: "Live data: vladstol223.github.io/wd.bob — Winn-Dixie Bobathon 2026"
 
-After creating the file, tell me to open `dashboard.html` in my browser. Remind me that `winn-dixie-data.js` must be in the same folder as `dashboard.html` for the map to load.</pre>
+After creating the file, tell me to open `dashboard.html` in my browser.</pre>
                   <button class="copy-btn">Copy</button>
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> in your browser. You should see a dark-themed map with warehouse and store nodes you can drag and zoom. Come back here and move on to Step 3 when you're ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> in your browser. You should see the Florida map with warehouse hexagons, store circles — and <strong>15 trucks driving their routes in real time</strong>, color-coded green/yellow/grey. Come back here and move on to Step 3 when you're ready.</div>
                 </div>
               </div></div>
             </div>
@@ -1153,7 +1203,7 @@ After creating the file, tell me to open `dashboard.html` in my browser. Remind 
                 <p class="uc-desc">Paste this prompt into Bob. It will update <code>dashboard.html</code> so that clicking any node opens a detail panel — a visual floor plan for stores, and a dock &amp; inventory breakdown for warehouses.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 3</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT re-read or embed any content from `winn-dixie-data.js` — the script tag loading it is already in the file and must stay as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via `window.WINN_DIXIE_DATA`.
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove or modify the `fetch()` call that loads data from the GitHub Pages URL, and do NOT remove the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` variable populated by the fetch.
 
 **Side Panel (slides in from the right on node click):**
 - Takes up 32% of the page width; the map fills the remaining 68%
@@ -1204,7 +1254,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
                 <p class="uc-desc">Paste this final prompt into Bob. It adds a live delivery tracker below the map — a swimlane view of every active and completed delivery, with status badges and timeline bars.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 4</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT re-read or embed any content from `winn-dixie-data.js` — the script tag loading it is already in the file and must stay as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via `window.WINN_DIXIE_DATA`.
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove or modify the `fetch()` call that loads data from the GitHub Pages URL, and do NOT remove the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via the `WD` variable populated by the fetch.
 
 **Delivery Section layout — three equal columns side by side:**
 - Section heading: "Deliveries" with three count badges inline: a red badge for delayed count, green for on-time count, grey for delivered count
@@ -1246,23 +1296,108 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
 
           <div class="card-starting-prompt">
             <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
-            <div class="csp-text">"I have a JSON data file with warehouse, store, and delivery data. Help me build a visual operations dashboard I can actually explore — a network map, store floor plans, and a delivery tracker."</div>
+            <div class="csp-text">"I have a live data feed with warehouse, store, and delivery data. Help me build a visual operations dashboard — a network map with animated delivery trucks, store floor plans I can click into, and a delivery tracker."</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── TRACK B: Guided Learning Modes ───────────────── -->
+    <!-- ── TRACK B: Debug with Bob ─────────────────────── -->
     <div class="bubble-card track-b" id="card-b">
       <div class="card-summary">
-        <div class="card-icon" aria-label="Books">
+        <div class="card-icon" aria-label="Error log">
           <svg viewBox="0 0 24 24" fill="none" stroke="var(--cb)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="card-text">
+          <div class="card-label">Track B</div>
+          <div class="card-title">Debug an Error with Bob</div>
+          <div class="card-desc">Got a cryptic error log staring back at you? Paste it into Bob and let him break down exactly what went wrong, why it happened, and what to do next — no debugging experience needed.</div>
+          <div class="card-meta">
+            <span class="card-tag">No experience needed</span>
+            <span class="card-tag">Real error logs</span>
+            <span class="card-tag">~10 min</span>
+            <span class="card-tag">Fully explained</span>
+          </div>
+        </div>
+        <div class="card-chevron" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l5 5 5-5"/></svg>
+        </div>
+      </div>
+      <div class="card-detail">
+        <div class="card-detail-inner">
+          <div class="detail-intro">You're looking at an error log from one of your internal systems and have no idea what it means. Paste the log below into Bob and he'll explain what went wrong, what caused it, and give you a clear next step — in plain English.</div>
+
+          <div class="use-cases">
+
+            <div class="use-case">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="uc-title">Step 1 — Copy the sample error log &amp; ask Bob to explain it</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Below is a realistic error log from a Node.js inventory sync service. Copy the prompt and paste it directly into Bob — he'll read the log, diagnose what went wrong, and walk you through a fix.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — paste this in</div>
+                  <pre>I have an error log from our inventory sync service and I have no idea what it means. Can you read through it, explain in plain English what went wrong, why it happened, and what I should do to fix it?
+
+Here is the log:
+
+[2026-07-14 08:43:11] INFO  Inventory sync job started (store=ST-03, warehouse=WH-01)
+[2026-07-14 08:43:11] INFO  Connecting to database at db-primary.wdx.internal:5432
+[2026-07-14 08:43:14] ERROR ConnectionError: connect ETIMEDOUT db-primary.wdx.internal:5432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1157:16)
+    at Object.exports.connect (node:net:282:5)
+[2026-07-14 08:43:14] WARN  Retrying connection (attempt 1 of 3, backoff=2s)
+[2026-07-14 08:43:16] ERROR ConnectionError: connect ETIMEDOUT db-primary.wdx.internal:5432
+[2026-07-14 08:43:16] WARN  Retrying connection (attempt 2 of 3, backoff=4s)
+[2026-07-14 08:43:20] ERROR ConnectionError: connect ETIMEDOUT db-primary.wdx.internal:5432
+[2026-07-14 08:43:20] ERROR Max retries reached. Failing job.
+[2026-07-14 08:43:20] ERROR UnhandledPromiseRejectionWarning: SyncJobError: Database unavailable after 3 attempts
+    at SyncJob.run (/app/jobs/inventorySync.js:87:11)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+[2026-07-14 08:43:20] INFO  Sync job failed — store ST-03 inventory NOT updated
+[2026-07-14 08:43:20] INFO  Next retry scheduled at 09:13:11
+
+After you explain it, tell me: is this a code bug I need to fix, or something outside the code that an infrastructure or network team should look at?</pre>
+                  <button class="copy-btn">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(0,87,184,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7db3f5;margin-bottom:5px;">Want to go further?</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Once Bob explains this log, try pasting in a real error from your own environment and ask him the same question. You can also ask Bob to write a runbook entry so your team knows what to do the next time this happens.</div>
+                </div>
+              </div></div>
+            </div>
+
+          </div>
+
+          <div class="card-starting-prompt">
+            <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
+            <div class="csp-text">"Here's an error log I don't understand. Walk me through what went wrong, why, and what to do next."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TRACK C: Guided Learning Modes ───────────────── -->
+    <div class="bubble-card track-c" id="card-c">
+      <div class="card-summary">
+        <div class="card-icon" aria-label="Books">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--cc)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
           </svg>
         </div>
         <div class="card-text">
-          <div class="card-label">Track B</div>
+          <div class="card-label">Track C</div>
           <div class="card-title">Guided Learning Modes</div>
           <div class="card-desc">Three structured learning paths with Bob as your tutor. Choose <strong>Qiskit</strong> for quantum, <strong>PyBob</strong> for Python, or <strong>SQL</strong> to learn database querying from scratch.</div>
           <div class="card-meta">
@@ -1618,16 +1753,16 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       </div>
     </div>
 
-    <!-- ── TRACK C: Bring Your Own ─────────────────────── -->
-    <div class="bubble-card track-c" id="card-c">
+    <!-- ── TRACK D: Bring Your Own ─────────────────────── -->
+    <div class="bubble-card track-d" id="card-d">
       <div class="card-summary">
         <div class="card-icon" aria-label="Lightbulb">
-          <svg viewBox="0 0 24 24" fill="none" stroke="var(--cc)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--cd)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21h6M12 3a6 6 0 0 1 4.24 10.24C15.5 14 15 15 15 16H9c0-1-.5-2-1.24-2.76A6 6 0 0 1 12 3z"/>
           </svg>
         </div>
         <div class="card-text">
-          <div class="card-label">Track C</div>
+          <div class="card-label">Track D</div>
           <div class="card-title">Bring Your Own</div>
           <div class="card-desc">Have a specific <strong>file, idea, or problem</strong> in mind? Bring it. If none of the other tracks match what you're actually trying to solve, we'd rather you work on <strong>something real</strong>.</div>
           <div class="card-meta">
@@ -1791,7 +1926,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
         setTimeout(function() {
           card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
-        if (card.id === 'card-c') {
+        if (card.id === 'card-d') {
           setTimeout(function() {
             document.getElementById('dq1').classList.add('qvisible');
           }, 320);
@@ -1882,8 +2017,6 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     var currentNum = parentStep ? parseInt(parentStep.querySelector('.step-num').textContent.trim(), 10) : 2;
     var stepsBlock = btn.closest('.mode-steps');
     if (stepsBlock) revealStep(stepsBlock, currentNum + 1);
-    // If this confirm is inside Track A Step 1, unlock the Step 2 accordion
-    if (btn.closest('#card-a')) unlockUcStep('uc-step2-a');
   });
 
   function revealStep(stepsBlock, stepNum) {
@@ -1934,6 +2067,9 @@ After writing the file, confirm the mode is installed and tell me to switch to "
           if (stepsBlock) revealStep(stepsBlock, 4);
         }
       }
+      // data-unlock-uc attribute: unlock a specific accordion step on copy
+      var unlockTarget = btn.getAttribute('data-unlock-uc');
+      if (unlockTarget) unlockUcStep(unlockTarget);
       // Track A accordion unlock: copy in uc-step2-a → unlock uc-step3-a, etc.
       var parentUc = btn.closest('.use-case');
       if (parentUc) {
