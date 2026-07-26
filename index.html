@@ -1024,10 +1024,10 @@
         <div class="card-text">
           <div class="card-label">Track A</div>
           <div class="card-title">Supply Chain Operations Dashboard</div>
-          <div class="card-desc">Step into the role of a regional operations director and use Bob to build a live supply chain dashboard — a draggable network map with <strong>animated delivery trucks</strong>, per-store floor plan views, and a delivery timeline. Data streams live from GitHub. No coding experience needed.</div>
+          <div class="card-desc">Step into the role of a regional operations director and use Bob to build a live supply chain dashboard — a draggable network map with <strong>animated delivery trucks</strong>, per-store floor plan views, and a delivery timeline. No coding experience needed.</div>
           <div class="card-meta">
             <span class="card-tag">No experience needed</span>
-            <span class="card-tag">Live data feed</span>
+            <span class="card-tag">Animated trucks</span>
             <span class="card-tag">~30 min</span>
             <span class="card-tag">Fully guided</span>
           </div>
@@ -1038,7 +1038,7 @@
       </div>
       <div class="card-detail">
         <div class="card-detail-inner">
-          <div class="detail-intro">You're a regional operations director at Winn-Dixie. It's Monday morning and you've just been asked to get ahead of a potential supply chain disruption before the exec briefing at noon. In the next 30 minutes, you'll use Bob to build a fully interactive operations dashboard — a live network map with animated delivery trucks driving warehouse-to-store routes in real time, store floor plans you can click into, and a delivery tracker. The data streams live from a hosted feed so everyone in the room sees the same thing. Just follow the steps below.</div>
+          <div class="detail-intro">You're a regional operations director at Winn-Dixie. It's Monday morning and you've just been asked to get ahead of a potential supply chain disruption before the exec briefing at noon. In the next 30 minutes, you'll use Bob to build a fully interactive operations dashboard — a network map with animated delivery trucks driving warehouse-to-store routes in real time, store floor plans you can click into, and a delivery tracker. Just follow the steps below.</div>
 
           <div class="use-cases">
 
@@ -1053,24 +1053,20 @@
                 </div>
               </div>
               <div class="uc-body"><div class="uc-body-inner">
-                <p class="uc-desc">The dashboard data is hosted live on GitHub Pages — 3 warehouses, 12 stores, inventory levels, floor plans, and 15 delivery routes. No file to download. Copy the prompt below and paste it into Bob to get started.</p>
-                <div style="margin-bottom:14px;padding:10px 13px;background:#1a1200;border-radius:8px;border:1px solid rgba(240,171,0,0.35);font-size:0.8rem;color:#c9a227;line-height:1.6;">
-                  <strong style="color:#F0AB00;">⚠ Important:</strong> The dashboard fetches live data from GitHub — it will only work when served over HTTP, not opened as a file. After Bob creates <code style="color:#ffe08a">dashboard.html</code>, open it using <strong>VS Code Live Server</strong> (right-click the file → <em>Open with Live Server</em>) rather than double-clicking it from your file explorer.
-                </div>
+                <p class="uc-desc">The supply chain data is in <code>winn-dixie-data.json</code> — 3 warehouses, 12 stores, inventory levels, floor plans, and 15 delivery routes. Copy the prompt below and paste it into Bob to get started.</p>
                 <div class="mode-steps">
 
                   <div class="mode-step">
                     <div class="step-num">1</div>
                     <div class="step-body">
-                      <div class="step-title">Tell Bob the live data URL and create the dashboard file</div>
-                      <div class="step-desc">Copy this prompt and paste it into Bob. It tells Bob where to fetch the live data from and asks it to create <code>dashboard.html</code> in your workspace.</div>
+                      <div class="step-title">Point Bob at the data file</div>
+                      <div class="step-desc">Copy this prompt and paste it into Bob. It tells Bob where the data lives and how to load it into the dashboard.</div>
                       <div class="step-prompt">
-                        <pre>The supply chain data for this dashboard is hosted live at:
-https://vladstol223.github.io/wd.bob/winn-dixie-data.json
+                        <pre>The supply chain data for this dashboard is in a file called `winn-dixie-data.json` in my workspace.
 
-I'll be building a `dashboard.html` file that fetches this URL at runtime using `fetch()`. Store the result in a module-scoped variable called `WD` (e.g. `let WD = null`) once the fetch resolves. Do not embed or hardcode any of the data — always read it from `WD` at runtime.
+I'll be building a `dashboard.html` file. Read `winn-dixie-data.json` and embed its full contents as a `const WD = {...}` constant at the top of the script block. All runtime code reads from `WD`.
 
-Confirm you understand the data URL and the fetch pattern, then tell me you are ready for the next prompt to build the dashboard.</pre>
+Confirm you understand, then tell me you are ready for the next prompt to build the dashboard.</pre>
                         <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
                       </div>
                       <button class="step-no-folder" data-ntb="true">
@@ -1095,21 +1091,13 @@ Confirm you understand the data URL and the fetch pattern, then tell me you are 
                 </div>
               </div>
               <div class="uc-body"><div class="uc-body-inner">
-                <p class="uc-desc">Paste this prompt into Bob. It will create <code>dashboard.html</code> — a live map fetching data from GitHub Pages, with animated top-down delivery trucks driving their routes in real time, color-coded by status.</p>
+                <p class="uc-desc">Paste this prompt into Bob. It will create <code>dashboard.html</code> — an animated network map with top-down delivery trucks driving their routes in real time, color-coded by status.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 2</div>
                   <pre>Create a new file called `dashboard.html` in my workspace. It must be a fully self-contained HTML page (all CSS and JS inline — no external scripts or stylesheets).
 
-**Data loading:**
-At the top of the `&lt;script&gt;` block, fetch the data from the live URL and store it in a module-scoped variable:
-```
-const DATA_URL = 'https://vladstol223.github.io/wd.bob/winn-dixie-data.json';
-let WD = null;
-fetch(DATA_URL)
-  .then(r => r.json())
-  .then(data => { WD = data; initDashboard(); });
-```
-All runtime code reads from `WD`. Do NOT hardcode or embed any data values.
+**Data:**
+Read `winn-dixie-data.json` from the workspace and embed its full contents as a `const WD = {...}` constant at the very top of the `&lt;script&gt;` block. All runtime code reads from `WD`. Do not use fetch or any network requests.
 
 **Header:**
 - Dark navy background (#002147), white text
@@ -1233,7 +1221,7 @@ After creating the file, tell me to open `dashboard.html` in my browser.</pre>
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> via <strong style="color:#e2e6f0">VS Code Live Server</strong> (right-click the file in the Explorer panel → <em>Open with Live Server</em>). <strong style="color:#ef4444">Do not double-click the file</strong> — opening it as <code style="color:#b8c8e8">file://</code> blocks the live data fetch. You should see the Florida map with warehouse hexagons, store circles, and <strong>15 trucks driving in real time</strong>. Come back here and move on to Step 3 when you're ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> in your browser — double-click it from your file explorer or use the Integrated Browser. You should see the Florida map with warehouse hexagons, store circles, and <strong>15 trucks driving in real time</strong>. Come back here and move on to Step 3 when you're ready.</div>
                 </div>
               </div></div>
             </div>
@@ -1252,7 +1240,7 @@ After creating the file, tell me to open `dashboard.html` in my browser.</pre>
                 <p class="uc-desc">Paste this prompt into Bob. It will update <code>dashboard.html</code> so that clicking any node opens a detail panel — a visual floor plan for stores, and a dock &amp; inventory breakdown for warehouses.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 3</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove or modify the `fetch()` call that loads data from the GitHub Pages URL, and do NOT remove the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` variable populated by the fetch.
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` constant.
 
 **Side Panel (slides in from the right on warehouse or store node click):**
 - Takes up 32% of the page width; the map SVG fills the remaining 68%
@@ -1285,7 +1273,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh the Live Server tab in your browser. Click any store node to see its floor plan, or any warehouse node to see dock and inventory details. Move on to Step 4 when ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> in your browser. Click any store node to see its floor plan, or any warehouse node to see dock and inventory details. Move on to Step 4 when ready.</div>
                 </div>
               </div></div>
             </div>
@@ -1304,7 +1292,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
                 <p class="uc-desc">Paste this final prompt into Bob. It adds a live delivery tracker below the map — a swimlane view of every active and completed delivery, with status badges and timeline bars.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 4</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove or modify the `fetch()` call that loads data from the GitHub Pages URL, and do NOT remove the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via the `WD` variable populated by the fetch.
+                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via the `WD` constant.
 
 **Delivery Section layout — three equal columns side by side:**
 - Section heading: "Deliveries" with three count badges inline: a red badge for delayed count, green for on-time count, grey for delivered count
@@ -1337,7 +1325,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh the Live Server tab one final time. Your full operations dashboard is complete — network map, drill-down panels, and a live delivery tracker. You're ready for the noon briefing.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> one final time. Your full operations dashboard is complete — network map, drill-down panels, and a live delivery tracker. You're ready for the noon briefing.</div>
                 </div>
               </div></div>
             </div>
