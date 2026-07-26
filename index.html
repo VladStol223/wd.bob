@@ -1060,12 +1060,13 @@
                     <div class="step-num">1</div>
                     <div class="step-body">
                       <div class="step-title">Download the data file into your workspace</div>
-                      <div class="step-desc">Copy this prompt and paste it into Bob. It downloads the supply chain data into your workspace so it's ready for the next step.</div>
+                      <div class="step-desc">Copy this prompt and paste it into Bob. It downloads the supply chain data and strips the large map image out of it so the next step runs quickly.</div>
                       <div class="step-prompt">
-                        <pre>Download the supply chain data file into my workspace by fetching this URL and saving it as `winn-dixie-data.json`:
-https://vladstol223.github.io/wd.bob/winn-dixie-data.json
+                        <pre>Download the supply chain data file into my workspace:
+1. Fetch https://vladstol223.github.io/wd.bob/winn-dixie-data.json and save it as `winn-dixie-data.json`.
+2. Read the file, set `map_background.base64` to an empty string `""`, and overwrite `winn-dixie-data.json` with the result. Leave every other field exactly as-is.
 
-Once saved, confirm the file is in the workspace and tell me you are ready for the next prompt.</pre>
+Once done, confirm both steps completed and tell me you are ready for the next prompt.</pre>
                         <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
                       </div>
                       <button class="step-no-folder" data-ntb="true">
@@ -1102,7 +1103,7 @@ Once saved, confirm the file is in the workspace and tell me you are ready for t
 **SVG map — critical architecture:**
 - Single `&lt;svg id="map-svg" viewBox="0 0 1792 1536" preserveAspectRatio="xMidYMid meet" width="100%" height="100%"&gt;` containing one `&lt;g id="world"&gt;`.
 - viewBox is FIXED at 0 0 1792 1536 and never changes. All x/y from the JSON are already in this space — use directly, no scaling.
-- Background: `&lt;image href="[WD.map_background.data_uri_prefix+WD.map_background.base64]" x="0" y="0" width="1792" height="1536"/&gt;` inside `&lt;g id="world"&gt;`. NOT a CSS background-image.
+- Background: `&lt;image href="https://vladstol223.github.io/wd.bob/map.jpg" x="0" y="0" width="1792" height="1536"/&gt;` inside `&lt;g id="world"&gt;`. NOT a CSS background-image. (The base64 field in WD.map_background will be empty — ignore it, use this URL directly.)
 - Map container background color #abd3df.
 
 **Pan/zoom** — only ever update `&lt;g id="world"&gt;`'s transform, never the viewBox:
