@@ -1059,14 +1059,13 @@
                   <div class="mode-step">
                     <div class="step-num">1</div>
                     <div class="step-body">
-                      <div class="step-title">Point Bob at the data file</div>
-                      <div class="step-desc">Copy this prompt and paste it into Bob. It tells Bob where the data lives and how to load it into the dashboard.</div>
+                      <div class="step-title">Download the data file into your workspace</div>
+                      <div class="step-desc">Copy this prompt and paste it into Bob. It downloads the supply chain data into your workspace so it's ready for the next step.</div>
                       <div class="step-prompt">
-                        <pre>The supply chain data for this dashboard is in a file called `winn-dixie-data.json` in my workspace.
+                        <pre>Download the supply chain data file into my workspace by fetching this URL and saving it as `winn-dixie-data.json`:
+https://vladstol223.github.io/wd.bob/winn-dixie-data.json
 
-I'll be building a `dashboard.html` file. Read `winn-dixie-data.json` and embed its full contents as a `const WD = {...}` constant at the top of the script block. All runtime code reads from `WD`.
-
-Confirm you understand, then tell me you are ready for the next prompt to build the dashboard.</pre>
+Use your file writing tool to save it — do NOT use the terminal or PowerShell. Once saved, confirm the file is in the workspace and tell me you are ready for the next prompt.</pre>
                         <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
                       </div>
                       <button class="step-no-folder" data-ntb="true">
