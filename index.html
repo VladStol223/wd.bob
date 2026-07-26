@@ -1106,20 +1106,58 @@ All runtime code reads from `WD`. Do NOT hardcode or embed any data values.
 - Subtitle: "Supply Chain Overview — Live View"
 - Legend row: gold hexagon = Warehouse, colored circle = Store (green ≥70%, yellow 40–69%, red &lt;40%), colored truck icon = Delivery (green = on time, yellow = delayed, grey = delivered)
 
-**Network Map (main area, fills most of page height):**
-- `WD.map_background` has `data_uri_prefix` and `base64` fields — construct the full image URI as `data_uri_prefix + base64` and set it as the CSS `background-image` of the map container.
-- Map container background color: `#abd3df`
-- The map image is 1792×1536px. The SVG canvas must match that aspect ratio, scaled to fill the container. All node x/y coordinates are pixel positions within 1792×1536 — scale proportionally to the rendered SVG size.
-- Each warehouse: gold (#F0AB00) hexagon, 28px radius, labeled below with name + city in plain black (#000000), no stroke.
-- Each store: circle, 14px radius, colored by average section stock_pct (green #22c55e ≥70, yellow #eab308 40–69, red #ef4444 &lt;40), labeled below with city in plain black.
-- Labels must not overlap — offset store labels 20px below circle, warehouse labels 36px below hexagon; if two labels are within 80px horizontally, alternate vertical offset (+20px / +38px).
+**Network Map — SVG architecture (critical — read carefully):**
+
+Use a single `&lt;svg&gt;` element that fills the map container, with a fixed viewBox:
+```
+&lt;svg id="map-svg" viewBox="0 0 1792 1536" preserveAspectRatio="xMidYMid meet"
+     width="100%" height="100%" style="display:block"&gt;
+  &lt;g id="world"&gt;
+    &lt;!-- everything goes here: background image, lines, nodes, trucks --&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;
+```
+
+- The `viewBox` is fixed at `0 0 1792 1536` and NEVER changes.
+- All warehouse/store x/y coordinates from the JSON are already in 1792×1536 pixel space — use them directly as SVG coordinates. Do NOT multiply by any scale factor.
+- The map background image goes inside `&lt;g id="world"&gt;` as an SVG `&lt;image&gt;` tag (NOT as a CSS background-image):
+  ```
+  &lt;image href="[data_uri_prefix + base64]" x="0" y="0" width="1792" height="1536"/&gt;
+  ```
+- Pan and zoom are implemented by updating the `transform` attribute of `&lt;g id="world"&gt;` only. The SVG `viewBox` must never be modified. Use this state object:
+  ```
+  let cam = { x: 0, y: 0, scale: 1 };
+  function applyCamera() {
+    world.setAttribute('transform',
+      `translate(${cam.x},${cam.y}) scale(${cam.scale})`);
+  }
+  ```
+- Drag to pan: on `mousedown` on the SVG, record start position; on `mousemove` update `cam.x/cam.y`; on `mouseup` stop.
+- Scroll to zoom: on `wheel` event on the SVG, zoom toward the cursor position in SVG space:
+  ```
+  const factor = event.deltaY &lt; 0 ? 1.1 : 0.9;
+  // Convert cursor to SVG element coords
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX; pt.y = event.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  // Zoom toward cursor
+  cam.x = svgPt.x + (cam.x - svgPt.x) * factor;
+  cam.y = svgPt.y + (cam.y - svgPt.y) * factor;
+  cam.scale *= factor;
+  applyCamera();
+  ```
+- "Reset View" button: sets `cam = { x:0, y:0, scale:1 }` and calls `applyCamera()`.
+- Map container background color: `#abd3df`.
+
+**Nodes:**
+- Each warehouse: gold (#F0AB00) hexagon, 28px radius, labeled below with name + city in plain black (#000000), no stroke. Use the warehouse `x`/`y` from the JSON directly.
+- Each store: circle, 14px radius, colored by average section stock_pct (green #22c55e ≥70, yellow #eab308 40–69, red #ef4444 &lt;40), labeled below with city in plain black. Use the store `x`/`y` from the JSON directly.
+- Labels: offset store labels 20px below circle, warehouse labels 36px below hexagon; if two labels are within 80px horizontally, alternate vertical offset (+20px / +38px).
 - Draw a line from each store to its warehouse (via warehouse_id), colored to match store health, 35% opacity.
-- Pan by drag, zoom by scroll wheel — plain JS, no libraries. Background + all SVG elements move together.
-- "Reset View" button bottom-right.
-- Clicking a warehouse or store node highlights it with a white SVG ring (pure SVG circle/polygon element — no div overlay, no rect).
+- Clicking a warehouse or store node highlights it with a white SVG ring (pure SVG circle/polygon element inside `&lt;g id="world"&gt;` — no div overlay, no rect).
 
 **Animated delivery trucks:**
-Add a truck animation layer on top of the map SVG. For each delivery in `WD.deliveries`, create an SVG `&lt;g&gt;` element (truck group) with `data-delivery-id` set to the delivery id.
+For each delivery in `WD.deliveries`, create an SVG `&lt;g class="truck"&gt;` element inside `&lt;g id="world"&gt;` with `data-delivery-id` set to the delivery id.
 
 Truck shape (top-down view, drawn in local coordinates centered at 0,0):
 - Cab: rounded rect, width 10, height 14, rx 3, centered at (0, -5) — this is the front
@@ -1131,50 +1169,50 @@ Status colors:
 - `delayed` → #eab308 (yellow)
 - `delivered` → #6b7280 (grey)
 
-Truck position simulation (deterministic, wall-clock synchronized — identical on all laptops):
+Truck position simulation (deterministic, wall-clock synchronized):
 ```
-const CYCLE_MS = 120000; // 120 real seconds per full round-trip
-const totalDeliveries = WD.deliveries.length;
+const CYCLE_MS = 120000;
 
 function getTruckState(delivery, index) {
-  const offsetMs = (index / totalDeliveries) * CYCLE_MS;
-  const phase = ((Date.now() + offsetMs) % CYCLE_MS) / CYCLE_MS; // 0..1
+  const offsetMs = (index / WD.deliveries.length) * CYCLE_MS;
+  const phase = ((Date.now() + offsetMs) % CYCLE_MS) / CYCLE_MS;
 
   const wh = WD.warehouses.find(w => w.id === delivery.from_warehouse_id);
   const st = WD.stores.find(s => s.id === delivery.to_store_id);
 
-  // Scale warehouse and store pixel coords to rendered SVG size
-  const scaleX = svgWidth / 1792;
-  const scaleY = svgHeight / 1536;
-  const wx = wh.x * scaleX, wy = wh.y * scaleY;
-  const sx = st.x * scaleX, sy = st.y * scaleY;
+  // Use JSON x/y directly — they are already in 1792×1536 SVG space
+  const wx = wh.x, wy = wh.y;
+  const sx = st.x, sy = st.y;
 
   let t, x, y, dx, dy;
   if (phase &lt; 0.5) {
-    // Outbound: warehouse → store
     t = phase / 0.5;
-    x = wx + (sx - wx) * t;
-    y = wy + (sy - wy) * t;
+    x = wx + (sx - wx) * t;  y = wy + (sy - wy) * t;
     dx = sx - wx; dy = sy - wy;
   } else {
-    // Return: store → warehouse
     t = (phase - 0.5) / 0.5;
-    x = sx + (wx - sx) * t;
-    y = sy + (wy - sy) * t;
+    x = sx + (wx - sx) * t;  y = sy + (wy - sy) * t;
     dx = wx - sx; dy = wy - sy;
   }
 
-  // +90 corrects for SVG default orientation (truck drawn pointing up)
   const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI + 90;
-  return { x, y, angleDeg };
+  return { x, y, angleDeg, direction: phase &lt; 0.5 ? 'Outbound' : 'Returning' };
 }
 ```
 
-Run a `setInterval` at 33ms. Each tick: for every truck `&lt;g&gt;`, call `getTruckState`, then set its `transform` attribute to `translate(x, y) rotate(angleDeg)`. Do NOT rebuild the DOM each tick — only update the `transform` attribute.
+Run a `setInterval` at 33ms. Each tick: for every `.truck` `&lt;g&gt;`, call `getTruckState`, then update its `transform`:
+```
+truckEl.setAttribute('transform', `translate(${state.x},${state.y}) rotate(${state.angleDeg})`);
+```
+Do NOT rebuild the DOM each tick — only update the `transform` attribute.
 
-Each truck `&lt;g&gt;` must have `cursor: pointer` style and a `data-delivery-id` attribute. Clicking a truck selects that delivery (for the side panel in Step 3).
-
-When the map is panned or zoomed, all truck groups move with the rest of the SVG content naturally (they are children of the same panned/zoomed SVG group).
+**Truck click — delivery info tooltip:**
+Each truck `&lt;g&gt;` must have `cursor: pointer` style. When a truck is clicked, show a small floating info box (positioned near the click, inside the map container div, `position:absolute`) containing:
+- Delivery ID and route: "[warehouse name] → [store name]"
+- Status badge (color-matched to truck color)
+- Items: comma-separated list of items from `delivery.items`
+- Direction: "Outbound" or "Returning" (from `getTruckState`)
+Clicking elsewhere on the map closes the tooltip. Store the delivery id of the selected truck in `window.selectedDeliveryId` (null when none selected) so Step 3 can read it.
 
 **Footer:**
 - One line: "Live data: vladstol223.github.io/wd.bob — Winn-Dixie Bobathon 2026"
@@ -1205,8 +1243,9 @@ After creating the file, tell me to open `dashboard.html` in my browser.</pre>
                   <div class="prompt-label">Bob Prompt — Step 3</div>
                   <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove or modify the `fetch()` call that loads data from the GitHub Pages URL, and do NOT remove the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` variable populated by the fetch.
 
-**Side Panel (slides in from the right on node click):**
-- Takes up 32% of the page width; the map fills the remaining 68%
+**Side Panel (slides in from the right on warehouse or store node click):**
+- Takes up 32% of the page width; the map SVG fills the remaining 68%
+- The map SVG uses `viewBox="0 0 1792 1536"` and `preserveAspectRatio="xMidYMid meet"` — do NOT change the viewBox or add any JS width/height scaling. The SVG will rescale automatically when its container resizes.
 - Has a close (×) button top-right; clicking it deselects the node and restores the full-width map
 - Panel heading: node name and city, with a colored status badge (store health color, or gold for warehouse)
 
