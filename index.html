@@ -420,7 +420,7 @@
     max-height: 0; overflow: hidden;
     transition: max-height 300ms var(--ease-out);
   }
-  .use-case.uc-open .uc-body { max-height: 900px; }
+  .use-case.uc-open .uc-body { max-height: 4000px; }
 
   .uc-body-inner { padding: 0 16px 16px; }
   .uc-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.65; margin-bottom: 14px; }
@@ -443,7 +443,15 @@
     font-size: 0.8rem;
     white-space: pre-wrap; word-break: break-word; line-height: 1.65;
     padding-right: 60px;
+    /* cap at 20 visible lines, then scroll */
+    max-height: calc(1.65em * 20);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.15) transparent;
   }
+  .prompt-box pre::-webkit-scrollbar { width: 5px; }
+  .prompt-box pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+  .prompt-box pre::-webkit-scrollbar-track { background: transparent; }
 
   /* Copy button: press 0.96 → bounce 1.02 → settle 1.0 */
   .copy-btn {
@@ -1046,6 +1054,9 @@
               </div>
               <div class="uc-body"><div class="uc-body-inner">
                 <p class="uc-desc">The dashboard data is hosted live on GitHub Pages — 3 warehouses, 12 stores, inventory levels, floor plans, and 15 delivery routes. No file to download. Copy the prompt below and paste it into Bob to get started.</p>
+                <div style="margin-bottom:14px;padding:10px 13px;background:#1a1200;border-radius:8px;border:1px solid rgba(240,171,0,0.35);font-size:0.8rem;color:#c9a227;line-height:1.6;">
+                  <strong style="color:#F0AB00;">⚠ Important:</strong> The dashboard fetches live data from GitHub — it will only work when served over HTTP, not opened as a file. After Bob creates <code style="color:#ffe08a">dashboard.html</code>, open it using <strong>VS Code Live Server</strong> (right-click the file → <em>Open with Live Server</em>) rather than double-clicking it from your file explorer.
+                </div>
                 <div class="mode-steps">
 
                   <div class="mode-step">
@@ -1222,7 +1233,7 @@ After creating the file, tell me to open `dashboard.html` in my browser.</pre>
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> in your browser. You should see the Florida map with warehouse hexagons, store circles — and <strong>15 trucks driving their routes in real time</strong>, color-coded green/yellow/grey. Come back here and move on to Step 3 when you're ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> via <strong style="color:#e2e6f0">VS Code Live Server</strong> (right-click the file in the Explorer panel → <em>Open with Live Server</em>). <strong style="color:#ef4444">Do not double-click the file</strong> — opening it as <code style="color:#b8c8e8">file://</code> blocks the live data fetch. You should see the Florida map with warehouse hexagons, store circles, and <strong>15 trucks driving in real time</strong>. Come back here and move on to Step 3 when you're ready.</div>
                 </div>
               </div></div>
             </div>
@@ -1274,7 +1285,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> in your browser. Click any store node to see its floor plan, or any warehouse node to see dock and inventory details. Move on to Step 4 when ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh the Live Server tab in your browser. Click any store node to see its floor plan, or any warehouse node to see dock and inventory details. Move on to Step 4 when ready.</div>
                 </div>
               </div></div>
             </div>
@@ -1326,7 +1337,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh <code style="color:#b8c8e8">dashboard.html</code> one final time. Your full operations dashboard is complete — network map, drill-down panels, and a live delivery tracker. You're ready for the noon briefing.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Refresh the Live Server tab one final time. Your full operations dashboard is complete — network map, drill-down panels, and a live delivery tracker. You're ready for the noon briefing.</div>
                 </div>
               </div></div>
             </div>
@@ -2108,12 +2119,15 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       }
       // data-unlock-uc attribute: unlock a specific accordion step on copy
       var unlockTarget = btn.getAttribute('data-unlock-uc');
-      if (unlockTarget) unlockUcStep(unlockTarget);
+      if (unlockTarget) {
+        collapseCurrentUc(btn);
+        unlockUcStep(unlockTarget);
+      }
       // Track A accordion unlock: copy in uc-step2-a → unlock uc-step3-a, etc.
       var parentUc = btn.closest('.use-case');
       if (parentUc) {
-        if (parentUc.id === 'uc-step2-a') unlockUcStep('uc-step3-a');
-        else if (parentUc.id === 'uc-step3-a') unlockUcStep('uc-step4-a');
+        if (parentUc.id === 'uc-step2-a') { collapseCurrentUc(btn); unlockUcStep('uc-step3-a'); }
+        else if (parentUc.id === 'uc-step3-a') { collapseCurrentUc(btn); unlockUcStep('uc-step4-a'); }
       }
     }
     if (navigator.clipboard) {
@@ -2124,11 +2138,17 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       fallbackCopy(text); done();
     }
   });
+  function collapseCurrentUc(btn) {
+    var uc = btn.closest('.use-case');
+    if (uc) uc.classList.remove('uc-open');
+  }
   function unlockUcStep(id) {
     var el = document.getElementById(id);
     if (!el || !el.classList.contains('uc-locked')) return;
     el.classList.remove('uc-locked');
     el.classList.add('uc-unlocked');
+    // auto-open the newly unlocked step
+    el.classList.add('uc-open');
     setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
   }
 
