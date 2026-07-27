@@ -2006,8 +2006,21 @@ After writing the file, confirm the mode is installed and tell me to switch to "
   initStars();
   drawStars();
 
+  // ── SCROLL DEPTH TRACKING ──────────────────────────────
+  var scrollMilestones = { 25: false, 50: false, 75: false, 100: false };
+  window.addEventListener('scroll', function() {
+    var scrolled = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+    [25, 50, 75, 100].forEach(function(m) {
+      if (!scrollMilestones[m] && scrolled >= m) {
+        scrollMilestones[m] = true;
+        gtag('event', 'scroll_depth', { depth_percent: m });
+      }
+    });
+  }, { passive: true });
+
   // ── HERO SCROLL CTA ────────────────────────────────────
   document.getElementById('hero-cta-btn').addEventListener('click', function() {
+    gtag('event', 'hero_cta_click');
     document.getElementById('tracks-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
@@ -2017,7 +2030,10 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     ntbOverlay.classList.add('active');
     document.getElementById('ntb-close').focus();
   }
-  document.getElementById('new-to-bob-btn').addEventListener('click', openNtb);
+  document.getElementById('new-to-bob-btn').addEventListener('click', function() {
+    gtag('event', 'new_to_bob_open');
+    openNtb();
+  });
   document.addEventListener('click', function(e) {
     if (e.target.closest('[data-ntb]')) openNtb();
   });
@@ -2060,7 +2076,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       cards.forEach(function(c) { c.classList.remove('open'); });
       if (!isOpen) {
         card.classList.add('open');
-        gtag('event', 'track_open', { track_id: card.id });
+        gtag('event', 'track_open', { track_id: card.id, track_name: { 'card-a': 'Dashboard', 'card-b': 'Debug', 'card-c': 'Learn', 'card-d': 'BringYourOwn' }[card.id] || card.id });
         setTimeout(function() {
           card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
@@ -2117,6 +2133,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
         a.click();
         document.body.removeChild(a);
         setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        gtag('event', 'yaml_download', { filename: filename });
         // Mark button as done
         btn.classList.add('downloaded');
         btn.querySelector('svg').style.display = 'none';
@@ -2156,6 +2173,13 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     btn.style.color = 'white';
     var parentStep = btn.closest('.mode-step');
     var currentNum = parentStep ? parseInt(parentStep.querySelector('.step-num').textContent.trim(), 10) : 2;
+    var parentCard = btn.closest('.bubble-card');
+    var cardId = parentCard ? parentCard.id : 'unknown';
+    gtag('event', 'step_confirm', {
+      track_id:   cardId,
+      track_name: trackNames[cardId] || cardId,
+      step:       currentNum
+    });
     var stepsBlock = btn.closest('.mode-steps');
     if (stepsBlock) revealStep(stepsBlock, currentNum + 1);
   });
@@ -2182,6 +2206,17 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     });
   }
 
+  // ── COPY COMPLETION TRACKING STATE ────────────────────
+  // Map each track card to the set of copy-btn elements that have been used.
+  // Keys match card IDs. Totals per track:
+  //   card-a: 5 copy btns (uc-step1 through uc-step5)
+  //   card-b: 3 copy btns
+  //   card-c: 6 copy btns (2 per sub-track × 3 sub-tracks)
+  //   card-d: 1 copy btn (quiz result)
+  var copyState = { 'card-a': new Set(), 'card-b': new Set(), 'card-c': new Set(), 'card-d': new Set() };
+  var copyTotals = { 'card-a': 5, 'card-b': 3, 'card-c': 6, 'card-d': 1 };
+  var trackNames = { 'card-a': 'Dashboard', 'card-b': 'Debug', 'card-c': 'Learn', 'card-d': 'BringYourOwn' };
+
   // ── COPY BUTTONS ───────────────────────────────────────
   document.addEventListener('click', function(e) {
     if (!e.target.classList.contains('copy-btn')) return;
@@ -2199,6 +2234,31 @@ After writing the file, confirm the mode is installed and tell me to switch to "
         btn.textContent = 'Copy';
         btn.classList.remove('copied');
       }, 2000);
+
+      // ── GA4: prompt_copy event ──────────────────────────
+      var parentCard = btn.closest('.bubble-card');
+      var cardId = parentCard ? parentCard.id : 'unknown';
+      var parentUcEl = btn.closest('.use-case');
+      var ucId = parentUcEl ? (parentUcEl.id || 'unknown') : 'unknown';
+      var parentModeStep = btn.closest('.mode-step');
+      var stepLabel = parentModeStep ? ('step-' + (parentModeStep.querySelector('.step-num') ? parentModeStep.querySelector('.step-num').textContent.trim() : '?')) : ucId;
+      gtag('event', 'prompt_copy', {
+        track_id:   cardId,
+        track_name: trackNames[cardId] || cardId,
+        step:       stepLabel
+      });
+
+      // ── GA4: track_complete when all copies done ────────
+      if (copyState[cardId]) {
+        copyState[cardId].add(btn);
+        if (copyState[cardId].size >= copyTotals[cardId]) {
+          gtag('event', 'track_complete', {
+            track_id:   cardId,
+            track_name: trackNames[cardId] || cardId
+          });
+        }
+      }
+
       // If this copy-btn is inside a step-3 mode-step, reveal step 4
       var parentStep = btn.closest('.mode-step');
       if (parentStep) {
@@ -2267,6 +2327,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     });
     opt.classList.add('selected');
     quizAnswers[qId] = val;
+    gtag('event', 'quiz_answer', { question: qId, answer: val });
 
     if (qId === 'dq1') {
       setTimeout(function() {
@@ -2320,6 +2381,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       notyet:   "I work at Winn Dixie in [your role/department] and I want to find a project idea that could make a real difference. Ask me 5 questions — one at a time — about my day-to-day frustrations, what I wish were automated, and the kind of impact I want to make. After I answer all 5, generate 3 project ideas tailored specifically to me."
     };
 
+    gtag('event', 'quiz_complete', { type: type, blocker: blocker, outcome: res });
     var prompt = basePrompts[type] + '\n\n' + blockerLine[blocker] + '\n\n' + resourceLine[res];
 
     var box = document.getElementById('quiz-result-box');
