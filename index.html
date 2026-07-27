@@ -1062,11 +1062,12 @@
                       <div class="step-title">Download the data file into your workspace</div>
                       <div class="step-desc">Copy this prompt and paste it into Bob. It downloads the supply chain data and strips the large map image out of it so the next step runs quickly.</div>
                       <div class="step-prompt">
-                        <pre>Download the supply chain data file into my workspace:
-1. Fetch https://vladstol223.github.io/wd.bob/winn-dixie-data.json and save it as `winn-dixie-data.json`.
-2. Read the file, set `map_background.base64` to an empty string `""`, and overwrite `winn-dixie-data.json` with the result. Leave every other field exactly as-is.
+                        <pre>Run these two PowerShell commands in sequence in my workspace:
 
-Once done, confirm both steps completed and tell me you are ready for the next prompt.</pre>
+1. Invoke-WebRequest -Uri "https://vladstol223.github.io/wd.bob/winn-dixie-data.json" -OutFile "winn-dixie-data.json"
+2. $j = Get-Content "winn-dixie-data.json" -Raw | ConvertFrom-Json; $j.map_background.base64 = ""; $j | ConvertTo-Json -Depth 100 | Set-Content "winn-dixie-data.json" -Encoding UTF8
+
+Run step 1 first, wait for it to complete, then run step 2. Once both finish, confirm the file is saved and tell me you are ready for the next prompt.</pre>
                         <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
                       </div>
                       <button class="step-no-folder" data-ntb="true">
@@ -1106,10 +1107,49 @@ Once done, confirm both steps completed and tell me you are ready for the next p
 - Background: `&lt;image href="https://vladstol223.github.io/wd.bob/map.jpg" x="0" y="0" width="1792" height="1536"/&gt;` inside `&lt;g id="world"&gt;`. NOT a CSS background-image. (The base64 field in WD.map_background will be empty — ignore it, use this URL directly.)
 - Map container background color #abd3df.
 
-**Pan/zoom** — only ever update `&lt;g id="world"&gt;`'s transform, never the viewBox:
-- State: `let cam={x:0,y:0,scale:1}`. Apply: `world.setAttribute('transform', \`translate(${cam.x},${cam.y}) scale(${cam.scale})\`)`.
-- Drag to pan. Scroll to zoom toward cursor using `svg.createSVGPoint()` + `getScreenCTM().inverse()`.
-- "Reset View" button: reset cam and reapply.
+**Pan/zoom** — only ever update `&lt;g id="world"&gt;`'s transform, never the viewBox. Use this code exactly:
+```
+let cam = { x: 0, y: 0, scale: 1 };
+function applyCamera() {
+  world.setAttribute('transform', `translate(${cam.x},${cam.y}) scale(${cam.scale})`);
+}
+
+// Drag to pan
+let drag = null;
+svg.addEventListener('mousedown', e => {
+  drag = { sx: e.clientX, sy: e.clientY, cx: cam.x, cy: cam.y };
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  cam.x = drag.cx + (e.clientX - drag.sx);
+  cam.y = drag.cy + (e.clientY - drag.sy);
+  applyCamera();
+});
+window.addEventListener('mouseup', () => { drag = null; });
+
+// Zoom toward cursor — use SVG viewport coords, not client coords
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY &lt; 0 ? 1.12 : 0.89;
+  const rect = svg.getBoundingClientRect();
+  // cursor in viewBox space (1792×1536)
+  const mouseVBx = (e.clientX - rect.left) / rect.width  * 1792;
+  const mouseVBy = (e.clientY - rect.top)  / rect.height * 1536;
+  // world point under cursor
+  const worldX = (mouseVBx - cam.x) / cam.scale;
+  const worldY = (mouseVBy - cam.y) / cam.scale;
+  // apply new scale, keep world point fixed under cursor
+  cam.scale = Math.max(0.3, Math.min(10, cam.scale * factor));
+  cam.x = mouseVBx - worldX * cam.scale;
+  cam.y = mouseVBy - worldY * cam.scale;
+  applyCamera();
+}, { passive: false });
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  cam = { x: 0, y: 0, scale: 1 }; applyCamera();
+});
+```
 
 **Nodes** (all inside `&lt;g id="world"&gt;`):
 - Warehouses: gold (#F0AB00) hexagon 28px radius, black label (name + city) below.
@@ -1124,7 +1164,7 @@ After saving, tell me to open `dashboard.html` in my browser.</pre>
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(124,58,237,0.3)">
                   <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#b49dfa;margin-bottom:5px;">After Bob finishes</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Double-click <code style="color:#b8c8e8">dashboard.html</code> to open it. You should see the Florida map with gold warehouse hexagons and colored store circles. Pan by dragging, zoom with scroll. Move on to Step 3 when ready.</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Open <code style="color:#b8c8e8">dashboard.html</code> — double-click it from your file explorer, or right-click it in Bob's Explorer panel and choose <strong style="color:#e2e6f0">Open in Integrated Browser</strong>. You should see the Florida map with gold warehouse hexagons and colored store circles. Pan by dragging, zoom with scroll. Move on to Step 3 when ready.</div>
                 </div>
               </div></div>
             </div>
@@ -2097,9 +2137,8 @@ After writing the file, confirm the mode is installed and tell me to switch to "
     if (!el || !el.classList.contains('uc-locked')) return;
     el.classList.remove('uc-locked');
     el.classList.add('uc-unlocked');
-    // auto-open the newly unlocked step
+    // auto-open the newly unlocked step — no scroll
     el.classList.add('uc-open');
-    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
   }
 
   function fallbackCopy(text) {
