@@ -1097,7 +1097,11 @@ Once both steps are complete, confirm the file is saved and tell me you are read
                   <div class="prompt-label">Bob Prompt — Step 2</div>
                   <pre>Create a new file called `dashboard.html` in my workspace. Fully self-contained — all CSS and JS inline, no external files.
 
+This step builds ONLY the map. Do not add a side panel, delivery table, delivery timeline, truck animation, or any other features — those come in later steps.
+
 **Data:** Read `winn-dixie-data.json` and embed the full contents as `const WD = {...}` at the top of the script. All code reads from `WD`. No fetch or network requests.
+
+**Layout:** The entire page must fit within the browser viewport with no vertical scrolling. Use `height: 100vh` on the body, a fixed-height header (~60px), the map filling all remaining space, and a fixed-height footer (~28px). Do not let the map overflow or push content below the fold.
 
 **Header:** Dark navy (#002147), white text. Title "Winn-Dixie Operations Dashboard", subtitle "Supply Chain Overview". Legend: gold hexagon = Warehouse, colored circle = Store (green ≥70%, yellow 40–69%, red &lt;40%).
 
@@ -1183,18 +1187,22 @@ After saving, tell me to open `dashboard.html` in my browser.</pre>
                 <p class="uc-desc">Paste this prompt into Bob. It adds 15 animated trucks driving their routes in real time, color-coded by delivery status.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 3</div>
-                  <pre>Update `dashboard.html` using your file writing tool. Do NOT remove `const WD`. Read the existing file for context, then write the complete updated file.
+                  <pre>Update `dashboard.html` by adding to it — read the existing file first, then write the complete updated file with the new feature added. Do NOT remove `const WD` or any existing code.
 
 Add animated delivery trucks. All truck elements go inside `&lt;g id="world"&gt;` so they pan/zoom with the map.
 
 **Truck shape** (local coords centered at 0,0, no stroke):
 - Cab: rounded rect width 10, height 14, rx 3, centered at (0,−5)
 - Trailer: rect width 8, height 10, centered at (0,7)
-- Color: `on_time`→#22c55e, `delayed`→#eab308, `delivered`→#6b7280
+**Truck color and live status** — each truck has a `liveStatus` that changes based on the current phase:
+- `phase < 0.5` (outbound, heading to store): use the delivery's original `status` from `WD.deliveries` (`on_time`→#22c55e, `delayed`→#eab308)
+- `phase >= 0.5` (returning to warehouse): always treat as `delivered` → #6b7280
+
+Update the truck's SVG fill color every tick to match its current `liveStatus`.
 
 One `&lt;g class="truck" data-delivery-id="..."&gt;` per delivery, `cursor:pointer`.
 
-**Animation** — `setInterval` at 33ms, update only `transform` attribute each tick:
+**Animation** — `setInterval` at 33ms, update only `transform` and fill color each tick:
 ```
 const CYCLE_MS = 120000;
 function getTruckState(delivery, index) {
@@ -1210,14 +1218,16 @@ function getTruckState(delivery, index) {
     x = st.x+(wh.x-st.x)*t; y = st.y+(wh.y-st.y)*t; dx=wh.x-st.x; dy=wh.y-st.y;
   }
   const angleDeg = Math.atan2(dy,dx)*180/Math.PI+90;
-  return { x, y, angleDeg, direction: phase&lt;0.5?'Outbound':'Returning' };
+  const liveStatus = phase &lt; 0.5 ? delivery.status : 'delivered';
+  const color = liveStatus === 'delayed' ? '#eab308' : liveStatus === 'delivered' ? '#6b7280' : '#22c55e';
+  return { x, y, angleDeg, direction: phase&lt;0.5?'Outbound':'Returning', liveStatus, color };
 }
-// each tick: truckEl.setAttribute('transform', `translate(${s.x},${s.y}) rotate(${s.angleDeg})`);
+// each tick:
+// truckEl.setAttribute('transform', `translate(${s.x},${s.y}) rotate(${s.angleDeg})`);
+// truckEl.querySelectorAll('rect').forEach(r => r.setAttribute('fill', s.color));
 ```
 
-The truck color must reflect the delivery's `status` field from `WD.deliveries` at all times — the color does NOT change based on direction or phase. A `delayed` truck is always yellow, an `on_time` truck is always green, a `delivered` truck is always grey, regardless of whether it is outbound or returning.
-
-**Click tooltip:** clicking a truck shows a small `position:absolute` box inside the map div with delivery ID, "[warehouse] → [store]", status badge, items, direction. Click elsewhere to close. Set `window.selectedDeliveryId` (null when closed).
+**Click tooltip:** clicking a truck shows a small `position:absolute` box inside the map div with delivery ID, "[warehouse] → [store]", live status badge (using `liveStatus` and its color), items, direction ("Outbound" or "Returning"). Click elsewhere to close. Set `window.selectedDeliveryId` (null when closed). Store `window.getTruckLiveStatus = (deliveryId) => liveStatus` so the delivery section in Step 5 can read the current live status of each truck.
 
 After saving, tell me to refresh `dashboard.html`.</pre>
                   <button class="copy-btn">Copy</button>
@@ -1243,7 +1253,9 @@ After saving, tell me to refresh `dashboard.html`.</pre>
                 <p class="uc-desc">Paste this prompt into Bob. It will update <code>dashboard.html</code> so that clicking any node opens a detail panel — a visual floor plan for stores, and a dock &amp; inventory breakdown for warehouses.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 4</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` constant.
+                  <pre>Update `dashboard.html` by adding to it — read the existing file first, then write the complete updated file with the new feature added. Do NOT remove `const WD`, the truck simulation loop, or any existing code.
+
+Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` constant.
 
 **Side Panel (slides in from the right on warehouse or store node click):**
 - Takes up 32% of the page width; the map SVG fills the remaining 68%
@@ -1297,7 +1309,9 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
                 <p class="uc-desc">Paste this final prompt into Bob. It adds a live delivery tracker below the map — a swimlane view of every active and completed delivery, with status badges and timeline bars.</p>
                 <div class="prompt-box">
                   <div class="prompt-label">Bob Prompt — Step 5</div>
-                  <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via the `WD` constant.
+                  <pre>Update `dashboard.html` by adding to it — read the existing file first, then write the complete updated file with the new feature added. Do NOT remove `const WD`, the truck simulation loop, or any existing code.
+
+Add a delivery section below the map. All data is available at runtime via the `WD` constant.
 
 **Delivery Section layout — three equal columns side by side:**
 - Section heading: "Deliveries" with three count badges inline: a red badge for delayed count, green for on-time count, grey for delivered count
@@ -1305,7 +1319,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
   - Left column header: "⚠ Delayed" (red accent)
   - Center column header: "✓ On Time" (green accent)
   - Right column header: "✔ Delivered" (grey accent)
-- Each delivery from the JSON goes into the column matching its status
+- Each delivery's column is determined by its **live status**, not the static `status` field in `WD`. Use `window.getTruckLiveStatus(delivery.id)` if available, falling back to `delivery.status`. Re-render the columns every 500ms so the column assignments update as trucks switch from outbound to returning.
 
 **Each delivery card (inside its column) contains:**
 1. Route label in bold: "[warehouse name] → [store name]" (look up names from the JSON)
@@ -1357,13 +1371,13 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
         </div>
         <div class="card-text">
           <div class="card-label">Track B</div>
-          <div class="card-title">Debug an Error with Bob</div>
-          <div class="card-desc">Got a cryptic error log staring back at you? Paste it into Bob and let him break down exactly what went wrong, why it happened, and what to do next — no debugging experience needed.</div>
+          <div class="card-title">Diagnose &amp; Document Operational Issues with Bob</div>
+          <div class="card-desc">Something broke and the error message means nothing to you. Paste it into Bob and he'll explain what went wrong in plain English, help you figure out if it's a people problem, a system problem, or a process problem — then turn the whole thing into a runbook your team can actually use.</div>
           <div class="card-meta">
             <span class="card-tag">No experience needed</span>
-            <span class="card-tag">Real error logs</span>
-            <span class="card-tag">~10 min</span>
-            <span class="card-tag">Fully explained</span>
+            <span class="card-tag">Real error scenarios</span>
+            <span class="card-tag">~20 min</span>
+            <span class="card-tag">Fully guided</span>
           </div>
         </div>
         <div class="card-chevron" aria-hidden="true">
@@ -1372,7 +1386,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
       </div>
       <div class="card-detail">
         <div class="card-detail-inner">
-          <div class="detail-intro">You're looking at an error log from one of your internal systems and have no idea what it means. Paste the log below into Bob and he'll explain what went wrong, what caused it, and give you a clear next step — in plain English.</div>
+          <div class="detail-intro">It's 9 AM and two things are already broken. The overnight inventory sync failed for one of your stores, and the morning sales report is showing numbers that don't add up. You don't need to know how any of this works under the hood — Bob will read the logs, explain what happened in plain English, tell you who to call, and write up a runbook so your team handles it the same way every time.</div>
 
           <div class="use-cases">
 
@@ -1381,15 +1395,15 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser to
                 <div class="uc-num">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 </div>
-                <div class="uc-title">Step 1 — Copy the sample error log &amp; ask Bob to explain it</div>
+                <div class="uc-title">Step 1 — The overnight inventory sync failed</div>
                 <div class="uc-arrow" aria-hidden="true">
                   <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
                 </div>
               </div>
               <div class="uc-body"><div class="uc-body-inner">
-                <p class="uc-desc">Below is a realistic error log from a Node.js inventory sync service. Copy the prompt and paste it directly into Bob — he'll read the log, diagnose what went wrong, and walk you through a fix.</p>
+                <p class="uc-desc">Your monitoring system flagged a failure on the overnight inventory sync for store ST-03. You've pulled the log — it's full of technical jargon. Paste the prompt below into Bob and he'll translate it into plain English and tell you exactly who needs to take action.</p>
                 <div class="prompt-box">
-                  <div class="prompt-label">Bob Prompt — paste this in</div>
+                  <div class="prompt-label">Bob Prompt — Step 1</div>
                   <pre>I have an error log from our inventory sync service and I have no idea what it means. Can you read through it, explain in plain English what went wrong, why it happened, and what I should do to fix it?
 
 Here is the log:
@@ -1411,11 +1425,83 @@ Here is the log:
 [2026-07-14 08:43:20] INFO  Next retry scheduled at 09:13:11
 
 After you explain it, tell me: is this a code bug I need to fix, or something outside the code that an infrastructure or network team should look at?</pre>
+                  <button class="copy-btn" data-unlock-uc="uc-step2-b">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(0,87,184,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7db3f5;margin-bottom:5px;">What to expect</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Bob will explain that the database server couldn't be reached (a network/infrastructure issue, not a code bug), walk through the retry sequence, and tell you to loop in the infrastructure team. Once he's done, move on to Step 2.</div>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case uc-locked" id="uc-step2-b">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                </div>
+                <div class="uc-title">Step 2 — The morning sales report doesn't add up</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Your store manager at ST-03 (Sunset Ridge) just texted you — the Monday morning sales report shows a $4,200 discrepancy between the POS system and the inventory ledger. You pull the system event log. Paste the prompt below into Bob and he'll figure out the connection between the two problems.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — Step 2</div>
+                  <pre>Still in the same conversation from Step 1. Now I have a second problem. My store manager at Sunset Ridge (ST-03) is reporting that the Monday morning sales report shows a $4,200 discrepancy — the POS system recorded $87,450 in sales, but the inventory ledger only accounts for $83,250 worth of stock movement. Here is the system event log from Sunday night through Monday morning:
+
+[2026-07-13 22:00:14] INFO  End-of-day inventory snapshot complete (store=ST-03)
+[2026-07-13 22:00:15] INFO  Snapshot saved to ledger. Total on-hand value: $142,800
+[2026-07-14 06:00:02] INFO  Beginning-of-day inventory sync (store=ST-03, warehouse=WH-01)
+[2026-07-14 06:00:03] INFO  Sync job completed. 3 new deliveries recorded, ledger updated.
+[2026-07-14 08:43:11] INFO  Scheduled mid-morning sync started (store=ST-03, warehouse=WH-01)
+[2026-07-14 08:43:20] ERROR Sync job failed — database unavailable (see earlier error)
+[2026-07-14 08:43:20] INFO  Ledger NOT updated. Last successful sync: 06:00:03
+[2026-07-14 09:01:17] INFO  POS daily sales report generated. Total sales: $87,450
+[2026-07-14 09:01:17] WARN  Ledger-POS reconciliation check: MISMATCH ($4,200 delta)
+[2026-07-14 09:01:17] WARN  Reconciliation check skipped — proceeding with stale ledger data
+
+Given what you already know from the first error, explain: why does this mismatch exist, is the $4,200 figure reliable or approximate, and what is the correct sequence of steps to resolve it before end of business today?</pre>
+                  <button class="copy-btn" data-unlock-uc="uc-step3-b">Copy</button>
+                </div>
+                <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(0,87,184,0.3)">
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7db3f5;margin-bottom:5px;">What to expect</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Bob will connect the dots — the failed sync from Step 1 left the ledger stale, so when the POS report ran it compared against outdated stock data. He'll give you a prioritized resolution checklist. Once he's done, move on to Step 3.</div>
+                </div>
+              </div></div>
+            </div>
+
+            <div class="use-case uc-locked" id="uc-step3-b">
+              <div class="use-case-header">
+                <div class="uc-num">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="uc-title">Step 3 — Turn it into a runbook</div>
+                <div class="uc-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
+                </div>
+              </div>
+              <div class="uc-body"><div class="uc-body-inner">
+                <p class="uc-desc">Bob just diagnosed two connected problems in plain English. Now turn that diagnosis into a permanent runbook — a step-by-step document your store managers and ops team can follow the next time this happens, without needing to call anyone technical.</p>
+                <div class="prompt-box">
+                  <div class="prompt-label">Bob Prompt — Step 3</div>
+                  <pre>Based on everything we just worked through, write a runbook in plain English that a non-technical store manager could follow if this happens again. Structure it like this:
+
+**Runbook: Inventory Sync Failure &amp; Sales Report Discrepancy**
+
+1. **What this runbook covers** — one sentence description of the scenario
+2. **How to know this is happening** — the 2–3 signs a manager would notice (e.g. alert emails, report flags, what they'd see on screen)
+3. **Immediate actions (first 30 minutes)** — numbered list of what to do right now, who to contact, what information to gather
+4. **Resolution steps** — what the infrastructure team needs to do, what the store manager needs to verify once it's fixed
+5. **How to prevent it next time** — 2–3 specific recommendations
+6. **Escalation path** — who owns this problem at each stage (store manager → ops lead → infrastructure team → management)
+
+Keep the language simple. Avoid technical jargon. If a technical term is unavoidable, explain it in parentheses. Write it so that someone who has never seen a log file could follow it.</pre>
                   <button class="copy-btn">Copy</button>
                 </div>
                 <div class="uc-open-hint" style="margin-top:14px;padding:12px 14px;background:#0d1b35;border-radius:10px;border:1px solid rgba(0,87,184,0.3)">
-                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7db3f5;margin-bottom:5px;">Want to go further?</div>
-                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Once Bob explains this log, try pasting in a real error from your own environment and ask him the same question. You can also ask Bob to write a runbook entry so your team knows what to do the next time this happens.</div>
+                  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7db3f5;margin-bottom:5px;">Bonus: bring your own log</div>
+                  <div style="font-size:0.82rem;color:#8b92a8;line-height:1.6;">Try it with a real error or system message from your own environment. Paste it into a new Bob chat, ask the same questions from Step 1, and then ask Bob to write a runbook for that too. You can have a draft runbook for any issue in under 5 minutes.</div>
                 </div>
               </div></div>
             </div>
@@ -1424,7 +1510,7 @@ After you explain it, tell me: is this a code bug I need to fix, or something ou
 
           <div class="card-starting-prompt">
             <div class="csp-label">Starting Prompt from the Bobathon Deck</div>
-            <div class="csp-text">"Here's an error log I don't understand. Walk me through what went wrong, why, and what to do next."</div>
+            <div class="csp-text">"Here's an error log I don't understand. Walk me through what went wrong, why, and what to do next — then help me write a runbook so my team handles it the same way every time."</div>
           </div>
         </div>
       </div>
