@@ -4,6 +4,14 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Winn Dixie x IBM Bob -- Choose Your AI Adventure</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GSNL2N0DW9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GSNL2N0DW9');
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -2052,6 +2060,7 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       cards.forEach(function(c) { c.classList.remove('open'); });
       if (!isOpen) {
         card.classList.add('open');
+        gtag('event', 'track_open', { track_id: card.id });
         setTimeout(function() {
           card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
@@ -2073,7 +2082,10 @@ After writing the file, confirm the mode is installed and tell me to switch to "
       uc.closest('.use-cases').querySelectorAll('.use-case').forEach(function(s) {
         s.classList.remove('uc-open');
       });
-      if (!isOpen) uc.classList.add('uc-open');
+      if (!isOpen) {
+        uc.classList.add('uc-open');
+        gtag('event', 'usecase_open', { usecase_id: uc.id || header.textContent.trim().slice(0, 60) });
+      }
     });
   });
 
