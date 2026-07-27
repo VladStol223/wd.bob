@@ -1062,12 +1062,12 @@
                       <div class="step-title">Download the data file into your workspace</div>
                       <div class="step-desc">Copy this prompt and paste it into Bob. It downloads the supply chain data and strips the large map image out of it so the next step runs quickly.</div>
                       <div class="step-prompt">
-                        <pre>Run these two PowerShell commands in sequence in my workspace:
+                        <pre>Please do the following two things in my workspace, in order:
 
-1. Invoke-WebRequest -Uri "https://vladstol223.github.io/wd.bob/winn-dixie-data.json" -OutFile "winn-dixie-data.json"
-2. $j = Get-Content "winn-dixie-data.json" -Raw | ConvertFrom-Json; $j.map_background.base64 = ""; $j | ConvertTo-Json -Depth 100 | Set-Content "winn-dixie-data.json" -Encoding UTF8
+1. Download the file at https://vladstol223.github.io/wd.bob/winn-dixie-data.json and save it as `winn-dixie-data.json` in the workspace folder.
+2. Once that's done, open the file, set the `map_background.base64` field to an empty string, and save it again. Leave every other field untouched.
 
-Run step 1 first, wait for it to complete, then run step 2. Once both finish, confirm the file is saved and tell me you are ready for the next prompt.</pre>
+Once both steps are complete, confirm the file is saved and tell me you are ready for the next prompt.</pre>
                         <button class="copy-btn" data-unlock-uc="uc-step2-a">Copy</button>
                       </div>
                       <button class="step-no-folder" data-ntb="true">
@@ -1215,6 +1215,8 @@ function getTruckState(delivery, index) {
 // each tick: truckEl.setAttribute('transform', `translate(${s.x},${s.y}) rotate(${s.angleDeg})`);
 ```
 
+The truck color must reflect the delivery's `status` field from `WD.deliveries` at all times — the color does NOT change based on direction or phase. A `delayed` truck is always yellow, an `on_time` truck is always green, a `delivered` truck is always grey, regardless of whether it is outbound or returning.
+
 **Click tooltip:** clicking a truck shows a small `position:absolute` box inside the map div with delivery ID, "[warehouse] → [store]", status badge, items, direction. Click elsewhere to close. Set `window.selectedDeliveryId` (null when closed).
 
 After saving, tell me to refresh `dashboard.html`.</pre>
@@ -1232,7 +1234,7 @@ After saving, tell me to refresh `dashboard.html`.</pre>
                 <div class="uc-num">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
                 </div>
-                <div class="uc-title">Step 3 — Add store &amp; warehouse drill-down</div>
+                <div class="uc-title">Step 4 — Add store &amp; warehouse drill-down</div>
                 <div class="uc-arrow" aria-hidden="true">
                   <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l5 5 5-5"/></svg>
                 </div>
@@ -1240,7 +1242,7 @@ After saving, tell me to refresh `dashboard.html`.</pre>
               <div class="uc-body"><div class="uc-body-inner">
                 <p class="uc-desc">Paste this prompt into Bob. It will update <code>dashboard.html</code> so that clicking any node opens a detail panel — a visual floor plan for stores, and a dock &amp; inventory breakdown for warehouses.</p>
                 <div class="prompt-box">
-                  <div class="prompt-label">Bob Prompt — Step 3</div>
+                  <div class="prompt-label">Bob Prompt — Step 4</div>
                   <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a click-to-explore detail panel and delivery filtering logic. All data is available at runtime via the `WD` constant.
 
 **Side Panel (slides in from the right on warehouse or store node click):**
@@ -1254,9 +1256,11 @@ After saving, tell me to refresh `dashboard.html`.</pre>
 2. **Critical Sections** — immediately below the health number, a red callout box listing any section with stock_pct &lt; 30, each with a ⚠ icon and the section name + percentage. If none, show a small green "All sections OK" line instead.
 3. **Floor Plan** — below the critical sections callout, a floor plan grid that fills the full panel width:
    - Rendered from the store's `floor_plan` 2D array using a CSS grid
-   - Cell colors: "S" = shelf (#1e3a5f), "A" = aisle (#0d1117), "E" = entrance (#F0AB00 at 55% opacity), "C" = checkout (#7c3aed at 55% opacity), "O" = open (#0d1117)
+   - The floor background is white. Cell colors: "S" = shelf (#1e3a5f dark blue), "A" = aisle (white), "E" = entrance (#F0AB00 at 55% opacity), "C" = checkout (#7c3aed at 55% opacity), "O" = open (white)
+   - All cells have a 1px solid #e5e7eb border so the grid lines are visible and every cell connects to its neighbours (no gaps between cells). Use `gap: 0` on the grid container.
+   - Aisle rows must separate shelf rows from the checkout row — shelves must not touch or connect to checkout cells. The floor_plan array already encodes this layout; just render it faithfully.
    - The grid must stretch to fill 100% of the panel's inner width. To get the panel width, use `Math.round(window.innerWidth * 0.32) - 48` as a reliable fallback (do NOT use `sidePanel.offsetWidth` which returns 0 when the panel is hidden). Calculate tile size as `Math.floor(panelWidth / numCols)` so all tiles are square and the grid is as large as possible.
-   - On each "S" tile that has a matching section (by row/col, 1-indexed): overlay the section name in small white text (font-size ~9px, truncated if needed) and a colored fill bar spanning the full tile width at the bottom (5px tall), colored green/yellow/red by stock_pct
+   - On each "S" tile that has a matching section (by row/col, 1-indexed): overlay the section name in small white text (font-size ~9px, truncated if needed) and a colored fill bar spanning the full tile width at the bottom (5px tall), colored green/yellow/red by stock_pct. Every "S" tile must render its label — do not skip any shelf cells.
 
 **For a Warehouse node, the panel shows:**
 1. **Dock Utilization** — "Docks Active: X / Y" with a gold filled progress bar
@@ -1292,7 +1296,7 @@ After overwriting the file, tell me to refresh `dashboard.html` in my browser.</
               <div class="uc-body"><div class="uc-body-inner">
                 <p class="uc-desc">Paste this final prompt into Bob. It adds a live delivery tracker below the map — a swimlane view of every active and completed delivery, with status badges and timeline bars.</p>
                 <div class="prompt-box">
-                  <div class="prompt-label">Bob Prompt — Step 4</div>
+                  <div class="prompt-label">Bob Prompt — Step 5</div>
                   <pre>Write a new version of `dashboard.html` using your file writing tool — do NOT use the terminal, PowerShell, or any shell command. Do NOT remove the `const WD = {...}` data constant or the truck simulation `setInterval` loop — both must be preserved exactly as-is. Read the existing `dashboard.html` only to understand the current structure, then write the complete updated file. Add a delivery section below the map. All data is available at runtime via the `WD` constant.
 
 **Delivery Section layout — three equal columns side by side:**
